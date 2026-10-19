@@ -19,7 +19,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 
 1. [Idea y API elegida](#1-idea-y-api-elegida) (Hito 1)
 2. [Modelo de datos](#2-modelo-de-datos) (Hito 2)
-3. Pantallas y flujo de navegación (Hito 3) · *pendiente*
+3. [Pantallas y flujo de navegación](#3-pantallas-y-flujo-de-navegación) (Hito 3)
 4. Arquitectura y endpoints (Hito 4) · *pendiente*
 5. Proyecto base en Android Studio (Hito 5) · *pendiente*
 6. Video de presentación (Hito 6) · *pendiente*
@@ -148,3 +148,67 @@ erDiagram
 - **Coordenadas como `double`.** Atracciones y aeropuertos traen `latitude` y `longitude`; con ellas la app abre el mapa y calcula cuál es el aeropuerto más cercano a cada atracción.
 - **Campos que pueden venir vacíos.** La mayoría de las ciudades (1.060 de 1.123) no traen `population` ni `surface`; en Kotlin se modelarán como tipos *nullable* (`Int?`) y la pantalla solo los mostrará cuando existan, para que la app no falle.
 - **Un detalle de la API:** en el JSON de aeropuertos el campo del departamento se llama `deparmentId` (sin la "t"). La app usará el `cityId`, que es el dato confiable, y llega al departamento a través de la ciudad.
+
+---
+
+## 3. Pantallas y flujo de navegación
+
+Las pantallas se diseñaron en **Google Stitch** como un prototipo interactivo: se puede tocar una tarjeta para abrir el detalle, usar la barra inferior para cambiar de pantalla y volver atrás.
+
+🔗 **Prototipo en Google Stitch:** [stitch.withgoogle.com/projects/10235196442344271062](https://stitch.withgoogle.com/projects/10235196442344271062)
+
+**Sistema de diseño:** Material Design 3 con los colores de la bandera de Colombia usados como paleta: azul profundo como color principal, amarillo como acento y rojo para estados importantes, sobre fondo claro.
+
+### Flujo de navegación
+
+```mermaid
+flowchart LR
+    A["🧭 Explorar<br/>(lista de atracciones)"] -- "toca una tarjeta<br/>viaja: attractionId" --> B["📍 Detalle de la atracción"]
+    C["🔍 Buscar<br/>(ciudades y atracciones)"] -- "toca una atracción<br/>viaja: attractionId" --> B
+    A -- "barra inferior: Buscar" --> C
+    C -- "barra inferior: Explorar" --> A
+    B -- "botón volver" --> A
+    B -- "botón volver" --> C
+    B -- "Abrir en Maps<br/>viaja: latitude, longitude" --> M["🗺️ App de mapas del celular"]
+```
+
+El único dato que viaja entre pantallas es el **`attractionId`**: la pantalla de detalle lo recibe y con él pide la información completa a la API. Así cada pantalla es independiente y el detalle se puede abrir desde Explorar o desde Buscar.
+
+### Pantalla 1 · Explorar (lista principal)
+
+<img src="docs/stitch/01-explorar.png" alt="Pantalla Explorar" width="300">
+
+| | |
+|---|---|
+| **Qué muestra** | Las atracciones turísticas en tarjetas con foto, nombre, ciudad y departamento. Arriba, una barra de búsqueda rápida y chips para filtrar por región. Cada tarjeta indica si ya está guardada para ver sin internet. |
+| **De dónde salen los datos** | `GET /TouristicAttraction` (lista con la ciudad de cada atracción). `GET /Department` y `GET /Region` para mostrar el departamento y filtrar por región. |
+| **Acciones del usuario** | Tocar una tarjeta → abre el **Detalle**. Tocar un chip de región → filtra la lista. Tocar el ícono de guardar → la guarda en el celular. Barra inferior → cambia a **Buscar**. |
+| **Datos que envía** | `attractionId` al Detalle. |
+
+### Pantalla 2 · Detalle de la atracción
+
+<img src="docs/stitch/02-detalle.png" alt="Pantalla Detalle" width="300"> <img src="docs/stitch/02-detalle-como-llegar.png" alt="Detalle: mapa y cómo llegar" width="300">
+
+| | |
+|---|---|
+| **Qué muestra** | Foto grande, nombre, ciudad, departamento y región, descripción completa, un mapa con la ubicación y la tarjeta **"Cómo llegar"** con el aeropuerto más cercano (nombre, código IATA, tipo y distancia en km). |
+| **De dónde salen los datos** | `GET /TouristicAttraction/{id}` (detalle con fotos y coordenadas). `GET /Airport` para calcular el aeropuerto más cercano a partir de la latitud y longitud de la atracción y de cada aeropuerto. |
+| **Acciones del usuario** | Volver → regresa a la pantalla anterior. **Abrir en Maps** → abre la app de mapas del celular con las coordenadas. **Guardar sin internet** → guarda la atracción en el celular. Compartir. |
+| **Datos que recibe** | `attractionId`. |
+
+### Pantalla 3 · Buscar
+
+<img src="docs/stitch/03-buscar.png" alt="Pantalla Buscar" width="300">
+
+| | |
+|---|---|
+| **Qué muestra** | Un campo de búsqueda grande, filtros por región y departamento, y los resultados separados en **ciudades** (con departamento, población cuando existe y código postal) y **atracciones** (con foto pequeña). |
+| **De dónde salen los datos** | `GET /City/search/{texto}` y `GET /TouristicAttraction/search/{texto}`. Para el filtro por departamento: `GET /Region/{id}/departments`. |
+| **Acciones del usuario** | Escribir → busca ciudades y atracciones. Elegir región o departamento → filtra. Tocar una atracción → abre el **Detalle**. Barra inferior → vuelve a **Explorar**. |
+| **Datos que envía** | `attractionId` al Detalle. |
+
+### Notas del prototipo
+
+- **Todo lo que muestran las pantallas sale de API Colombia**, menos lo que calcula la app (la distancia al aeropuerto y el espacio que ocupa lo guardado en el celular). Al diseñar se quitaron a propósito las estrellas, reseñas, precios y audioguías que Stitch proponía, porque la API no tiene esos datos.
+- Algunos textos de apoyo del prototipo, como las indicaciones de transporte terrestre en "Cómo llegar" o etiquetas como "Mejor temporada", son de ejemplo visual. En la app se reemplazarán por datos de la API o no se mostrarán.
+- La tercera opción de la barra inferior, **Guardados**, queda planeada para una siguiente versión: mostraría las atracciones guardadas para ver sin internet.
