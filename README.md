@@ -105,7 +105,7 @@ erDiagram
         string name
         string description
         int population "puede venir vacío"
-        double surface "km², puede venir vacío"
+        int surface "km², puede venir vacío"
         string postalCode
         int departmentId FK
     }
@@ -146,5 +146,5 @@ erDiagram
 
 - **Solo los campos que la app necesita.** La API trae más información (presidentes, emisoras, reservas indígenas…), pero se dejó por fuera porque ninguna pantalla la usa.
 - **Coordenadas como `double`.** Atracciones y aeropuertos traen `latitude` y `longitude`; con ellas la app abre el mapa y calcula cuál es el aeropuerto más cercano a cada atracción.
-- **Campos que pueden venir vacíos.** Algunas ciudades no traen `population` ni `surface`; en Kotlin se modelarán como tipos *nullable* (`Int?`, `Double?`) para que la app no falle.
+- **Campos que pueden venir vacíos.** La mayoría de las ciudades (1.060 de 1.123) no traen `population` ni `surface`; en Kotlin se modelarán como tipos *nullable* (`Int?`) y la pantalla solo los mostrará cuando existan, para que la app no falle.
 - **Un detalle de la API:** en el JSON de aeropuertos el campo del departamento se llama `deparmentId` (sin la "t"). La app usará el `cityId`, que es el dato confiable, y llega al departamento a través de la ciudad.
