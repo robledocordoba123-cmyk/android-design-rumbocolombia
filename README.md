@@ -23,7 +23,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 4. [Arquitectura y endpoints](#4-arquitectura-y-endpoints) (Hito 4)
 5. [Proyecto base en Android Studio](#5-proyecto-base-en-android-studio) (Hito 5)
 6. [Video de presentación](#6-video-de-presentación) (Hito 6)
-7. Cómo trabajamos (GitHub Flow) · *pendiente*
+7. [Cómo trabajamos (GitHub Flow)](#7-cómo-trabajamos-github-flow) (Hito 7)
 
 ---
 
@@ -367,3 +367,44 @@ Video de máximo 5 minutos donde los dos integrantes explican la idea y la API, 
 🎬 **Ver el video:** *pendiente: se agrega el enlace cuando esté grabado*
 
 El guion, con lo que dice cada integrante y el tiempo de cada parte, está en [docs/GUION_VIDEO.md](docs/GUION_VIDEO.md).
+
+---
+
+## 7. Cómo trabajamos (GitHub Flow)
+
+Usamos **GitHub Flow**: `main` siempre tiene la versión revisada, y cada hito se trabaja en su propia rama y entra a `main` solo por medio de un Pull Request aprobado.
+
+```mermaid
+flowchart LR
+    M1(["main"]) --> R["Crear rama<br/>docs/hito-N-..."]
+    R --> C["Commits con<br/>mensajes claros"]
+    C --> P["Abrir Pull Request<br/>hacia main"]
+    P --> V{"Revisión<br/>del compañero"}
+    V -- "pide cambios" --> C
+    V -- "aprueba" --> MG["Merge"]
+    MG --> M2(["main actualizado"])
+```
+
+### Reglas que seguimos
+
+- **Nadie trabaja directo en `main`.** El único commit en `main` sin Pull Request es el del proyecto base generado por Android Studio.
+- **Una rama por hito**, con el nombre `docs/hito-N-tema` (por ejemplo `docs/hito-2-modelo-datos`).
+- **Mensajes de commit en español** que empiezan por el hito y dicen qué se hizo: `Hito 4: arquitectura MVVM en Mermaid y tabla de endpoints`.
+- **Cada Pull Request lo revisa el otro integrante**, que lo aprueba antes de hacer el merge.
+
+### Historial de Pull Requests
+
+| PR | Rama | Qué agregó | Revisión |
+|---|---|---|---|
+| [#1](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/1) | `docs/hito-1-idea-y-api` | Hito 1: idea, elevator pitch y API elegida | Aprobado por Davier |
+| [#2](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/2) | `docs/hito-2-modelo-datos` | Hito 2: diagrama ER (se unió por error a la rama del Hito 1) | Aprobado por Davier |
+| [#3](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/3) | `docs/hito-2-modelo-datos` | Hito 2 llevado a `main` para corregir lo anterior | Aprobado por Davier |
+| [#4](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/4) | `docs/hito-3-pantallas` | Hito 3: pantallas en Google Stitch y flujo de navegación | Aprobado por Davier |
+| [#5](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/5) | `docs/hito-4-arquitectura` | Hito 4: arquitectura MVVM y tabla de endpoints | Aprobado por Davier |
+| — | `docs/hito-5-proyecto-base` | Hito 5: proyecto base con captura | — |
+| — | `docs/hito-6-video` | Hito 6: guion y sección del video | — |
+| — | `docs/hito-7-github-flow` | Hito 7: esta sección | — |
+
+### Lo que aprendimos
+
+Al principio abrimos el PR del Hito 2 **sobre la rama del Hito 1** en lugar de `main`. Cuando se unió el Hito 1, el Hito 2 terminó en una rama que ya no se usaba y no llegó a `main`. Lo corregimos con el PR #3, y desde entonces **cada rama nueva sale de `main` actualizado** y cada Pull Request apunta a `main`.
