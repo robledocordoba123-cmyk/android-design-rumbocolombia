@@ -21,7 +21,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 2. [Modelo de datos](#2-modelo-de-datos) (Hito 2)
 3. [Pantallas y flujo de navegación](#3-pantallas-y-flujo-de-navegación) (Hito 3)
 4. [Arquitectura y endpoints](#4-arquitectura-y-endpoints) (Hito 4)
-5. Proyecto base en Android Studio (Hito 5) · *pendiente*
+5. [Proyecto base en Android Studio](#5-proyecto-base-en-android-studio) (Hito 5)
 6. Video de presentación (Hito 6) · *pendiente*
 7. Cómo trabajamos (GitHub Flow) · *pendiente*
 
@@ -325,3 +325,35 @@ com.rumbocolombia.android
 │   └── theme       → colores y tipografía
 └── MainActivity.kt
 ```
+
+
+---
+
+## 5. Proyecto base en Android Studio
+
+El proyecto se creó en Android Studio con la plantilla **Empty Activity** y se subió **tal como lo generó el asistente**, sin agregar ni quitar nada. Todo el diseño de la app vive en este README; el código empezará en la siguiente etapa del proyecto.
+
+| Dato | Valor |
+|---|---|
+| Plantilla | Empty Activity |
+| Lenguaje | Kotlin |
+| Interfaz | Jetpack Compose (Material 3) |
+| Configuración de Gradle | Kotlin DSL (`build.gradle.kts`) |
+| Paquete | `com.rumbocolombia.android` |
+| SDK mínimo | API 24 (Android 7.0) |
+| Commit inicial | [`d8bee3d`](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/commit/d8bee3ddcdefd81416af99555b9ba5d766210cd9) · 19 de octubre de 2026 |
+
+### La app corriendo en el emulador
+
+El proyecto base compila y se ejecuta sin errores en el emulador de Android Studio (Medium Phone). Muestra el texto de ejemplo que trae la plantilla:
+
+<p align="center">
+  <img src="docs/proyecto-base/hello-android.png" alt="Proyecto base corriendo en el emulador: Hello Android!" width="300">
+</p>
+
+### Qué trae el proyecto (y qué no)
+
+- `MainActivity.kt` con el `Greeting("Android")` de la plantilla.
+- `ui/theme/` con `Color.kt`, `Theme.kt` y `Type.kt` generados por Android Studio.
+- Las pruebas de ejemplo (`ExampleUnitTest` y `ExampleInstrumentedTest`).
+- **No** hay data classes, ViewModels, llamadas a la API ni pantallas propias. Desde el commit inicial, los únicos archivos que cambiaron son este README y las imágenes de la carpeta `docs/`.
