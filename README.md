@@ -20,7 +20,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 1. [Idea y API elegida](#1-idea-y-api-elegida) (Hito 1)
 2. [Modelo de datos](#2-modelo-de-datos) (Hito 2)
 3. [Pantallas y flujo de navegación](#3-pantallas-y-flujo-de-navegación) (Hito 3)
-4. Arquitectura y endpoints (Hito 4) · *pendiente*
+4. [Arquitectura y endpoints](#4-arquitectura-y-endpoints) (Hito 4)
 5. Proyecto base en Android Studio (Hito 5) · *pendiente*
 6. Video de presentación (Hito 6) · *pendiente*
 7. Cómo trabajamos (GitHub Flow) · *pendiente*
@@ -212,3 +212,116 @@ El único dato que viaja entre pantallas es el **`attractionId`**: la pantalla d
 - **Todo lo que muestran las pantallas sale de API Colombia**, menos lo que calcula la app (la distancia al aeropuerto y el espacio que ocupa lo guardado en el celular). Al diseñar se quitaron a propósito las estrellas, reseñas, precios y audioguías que Stitch proponía, porque la API no tiene esos datos.
 - Algunos textos de apoyo del prototipo, como las indicaciones de transporte terrestre en "Cómo llegar" o etiquetas como "Mejor temporada", son de ejemplo visual. En la app se reemplazarán por datos de la API o no se mostrarán.
 - La tercera opción de la barra inferior, **Guardados**, queda planeada para una siguiente versión: mostraría las atracciones guardadas para ver sin internet.
+
+---
+
+## 4. Arquitectura y endpoints
+
+La app se va a organizar con el patrón **MVVM**: cada pantalla solo dibuja lo que le da su ViewModel, el ViewModel le pide los datos al repositorio y el repositorio decide si los trae de internet (API Colombia) o del celular (lo guardado para ver sin señal).
+
+### Diagrama de arquitectura
+
+```mermaid
+flowchart LR
+    subgraph UI["Capa de UI · Jetpack Compose"]
+        EX["ExplorarScreen"]
+        DE["DetalleScreen"]
+        BU["BuscarScreen"]
+    end
+
+    subgraph VMS["ViewModels · estado Loading / Success / Error"]
+        EXVM["ExplorarViewModel"]
+        DEVM["DetalleViewModel"]
+        BUVM["BuscarViewModel"]
+    end
+
+    REPO["TurismoRepository<br/>(decide: API o datos guardados)"]
+
+    subgraph REMOTA["Fuente remota"]
+        RET["Retrofit + Gson<br/>ApiColombiaService"]
+    end
+
+    subgraph LOCAL["Fuente local"]
+        ROOM[("Room<br/>atracciones guardadas")]
+        DS[("DataStore<br/>preferencias")]
+    end
+
+    API[("API Colombia<br/>api-colombia.com/api/v1")]
+    COIL["Coil<br/>carga de imágenes"]
+
+    EX --> EXVM
+    DE --> DEVM
+    BU --> BUVM
+    EXVM --> REPO
+    DEVM --> REPO
+    BUVM --> REPO
+    REPO -- "suspend · Dispatchers.IO" --> RET
+    RET -- "HTTPS GET · JSON" --> API
+    REPO --> ROOM
+    REPO --> DS
+    EX -.-> COIL
+    DE -.-> COIL
+    BU -.-> COIL
+```
+
+### Cómo funciona cada capa
+
+| Capa | Qué hace | Tecnología |
+|---|---|---|
+| **UI** | Dibuja las 3 pantallas y le avisa al ViewModel lo que hace el usuario (tocar una tarjeta, escribir en el buscador). No sabe de dónde vienen los datos. | Jetpack Compose, Material 3, Navigation Compose |
+| **ViewModel** | Guarda el estado de cada pantalla y sobrevive cuando se gira el celular. Lanza las consultas en una corrutina. | ViewModel + `StateFlow` |
+| **Repositorio** | Es el único que habla con las fuentes de datos. Si hay internet consulta la API; si no, devuelve lo guardado en Room. | Kotlin Coroutines (`suspend`, `Dispatchers.IO`) |
+| **Fuente remota** | Hace las peticiones HTTP a API Colombia y convierte el JSON en objetos de Kotlin. | Retrofit + Gson |
+| **Fuente local** | Guarda las atracciones que el usuario marca para ver sin señal, y preferencias como la última región elegida. | Room y DataStore |
+| **Imágenes** | Descarga las fotos de las atracciones y las guarda en caché. | Coil |
+
+### Estados de cada pantalla
+
+Cada ViewModel expone uno de estos tres estados y la pantalla se dibuja según cuál sea:
+
+| Estado | Qué ve el usuario |
+|---|---|
+| **Loading** | Un indicador de carga mientras llega la respuesta. |
+| **Success** | La lista, el detalle o los resultados de la búsqueda. |
+| **Error** | Un mensaje claro (por ejemplo "Sin conexión") con un botón **Reintentar**. Si la atracción está guardada en el celular, se muestra igual desde Room. |
+
+### Seguridad
+
+- **API Colombia no necesita API Key**: es pública y solo de lectura, así que no hay ninguna clave que proteger.
+- Si en una versión futura se usa un servicio con clave (por ejemplo un mapa), la clave irá en `local.properties`, que ya está en el `.gitignore`, y se leerá con `BuildConfig`. **Nunca se sube al repositorio.**
+- Todas las peticiones van por **HTTPS**.
+
+### Endpoints que consumirá la app
+
+URL base: `https://api-colombia.com/api/v1/`
+
+| Endpoint | Método HTTP | Parámetros | Propósito en la app |
+|---|---|---|---|
+| `/TouristicAttraction` | GET | — | Lista de atracciones para la pantalla **Explorar**. |
+| `/TouristicAttraction/{id}` | GET | `id` (path): id de la atracción | Información completa, fotos y coordenadas para la pantalla **Detalle**. |
+| `/TouristicAttraction/search/{keyword}` | GET | `keyword` (path): texto que escribe el usuario | Atracciones que coinciden con la búsqueda en **Buscar**. |
+| `/City/search/{keyword}` | GET | `keyword` (path): texto que escribe el usuario | Ciudades que coinciden con la búsqueda en **Buscar**. |
+| `/Region` | GET | — | Las 6 regiones para los chips de filtro en **Explorar** y **Buscar**. |
+| `/Region/{id}/departments` | GET | `id` (path): id de la región | Departamentos de una región para el filtro de **Buscar**. |
+| `/Department` | GET | — | Nombre del departamento de cada atracción en las tarjetas de **Explorar**. |
+| `/Airport` | GET | — | Aeropuertos con sus coordenadas para calcular el más cercano en **Detalle** ("Cómo llegar"). |
+
+> Todos los endpoints se probaron el 20 de octubre de 2026 y responden `200 OK` con JSON.
+
+### Estructura de carpetas planeada
+
+Esto es solo el plan: **todavía no existe en el proyecto**, porque la actividad pide dejar el proyecto base sin código.
+
+```
+com.rumbocolombia.android
+├── data
+│   ├── remote      → ApiColombiaService (Retrofit) y los DTO del JSON
+│   ├── local       → Room (atracciones guardadas) y DataStore
+│   └── repository  → TurismoRepository
+├── ui
+│   ├── explorar    → ExplorarScreen + ExplorarViewModel
+│   ├── detalle     → DetalleScreen + DetalleViewModel
+│   ├── buscar      → BuscarScreen + BuscarViewModel
+│   └── theme       → colores y tipografía
+└── MainActivity.kt
+```
