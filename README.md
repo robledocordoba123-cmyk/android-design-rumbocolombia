@@ -22,7 +22,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 3. [Pantallas y flujo de navegación](#3-pantallas-y-flujo-de-navegación) (Hito 3)
 4. [Arquitectura y endpoints](#4-arquitectura-y-endpoints) (Hito 4)
 5. [Proyecto base en Android Studio](#5-proyecto-base-en-android-studio) (Hito 5)
-6. Video de presentación (Hito 6) · *pendiente*
+6. [Video de presentación](#6-video-de-presentación) (Hito 6)
 7. Cómo trabajamos (GitHub Flow) · *pendiente*
 
 ---
@@ -357,3 +357,13 @@ El proyecto base compila y se ejecuta sin errores en el emulador de Android Stud
 - `ui/theme/` con `Color.kt`, `Theme.kt` y `Type.kt` generados por Android Studio.
 - Las pruebas de ejemplo (`ExampleUnitTest` y `ExampleInstrumentedTest`).
 - **No** hay data classes, ViewModels, llamadas a la API ni pantallas propias. Desde el commit inicial, los únicos archivos que cambiaron son este README y las imágenes de la carpeta `docs/`.
+
+---
+
+## 6. Video de presentación
+
+Video de máximo 5 minutos donde los dos integrantes explican la idea y la API, el modelo de datos, las pantallas de Stitch, la arquitectura MVVM y muestran el proyecto base corriendo.
+
+🎬 **Ver el video:** *pendiente: se agrega el enlace cuando esté grabado*
+
+El guion, con lo que dice cada integrante y el tiempo de cada parte, está en [docs/GUION_VIDEO.md](docs/GUION_VIDEO.md).
