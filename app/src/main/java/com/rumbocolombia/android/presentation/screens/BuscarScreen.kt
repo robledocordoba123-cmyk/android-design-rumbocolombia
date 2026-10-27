@@ -20,10 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.components.FilaResultado
 import com.rumbocolombia.android.presentation.viewmodel.BuscarViewModel
+import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 // Pantalla 3: buscar ciudades y atracciones por nombre.
 @Composable
@@ -98,4 +100,13 @@ private fun Titulo(texto: String) {
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
     )
+}
+
+// Vista previa en Android Studio (botón Split o Design), sin abrir el emulador
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun BuscarScreenPreview() {
+    RumboColombiaTheme {
+        BuscarScreen(onAbrirDetalle = {}, viewModel = BuscarViewModel())
+    }
 }

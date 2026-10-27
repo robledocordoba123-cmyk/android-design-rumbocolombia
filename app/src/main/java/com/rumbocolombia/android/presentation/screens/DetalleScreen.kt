@@ -31,10 +31,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.components.FotoAtraccion
 import com.rumbocolombia.android.presentation.viewmodel.DetalleViewModel
+import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 // Pantalla 2: detalle de una atracción. Solo recibe el attractionId.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,5 +133,18 @@ fun DetalleScreen(
                 }
             }
         }
+    }
+}
+
+// Vista previa en Android Studio con el Museo del Oro (attractionId = 1)
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun DetalleScreenPreview() {
+    RumboColombiaTheme {
+        DetalleScreen(
+            attractionId = 1,
+            onVolver = {},
+            viewModel = DetalleViewModel().apply { cargar(1) }
+        )
     }
 }

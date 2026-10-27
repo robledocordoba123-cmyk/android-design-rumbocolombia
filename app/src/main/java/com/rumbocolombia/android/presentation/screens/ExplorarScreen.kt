@@ -14,10 +14,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.components.TarjetaAtraccion
 import com.rumbocolombia.android.presentation.viewmodel.ExplorarViewModel
+import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 // Pantalla 1: lista de atracciones con filtro por región.
 @Composable
@@ -75,5 +77,14 @@ fun ExplorarScreen(
                 )
             }
         }
+    }
+}
+
+// Vista previa en Android Studio (botón Split o Design), sin abrir el emulador
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun ExplorarScreenPreview() {
+    RumboColombiaTheme {
+        ExplorarScreen(onAbrirDetalle = {}, viewModel = ExplorarViewModel())
     }
 }
