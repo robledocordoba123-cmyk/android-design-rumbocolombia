@@ -1,5 +1,6 @@
 package com.rumbocolombia.android.presentation.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,11 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rumbocolombia.android.data.dto.ResultadosBusqueda
+import com.rumbocolombia.android.presentation.components.Cargando
+import com.rumbocolombia.android.presentation.components.ErrorConReintentar
 import com.rumbocolombia.android.presentation.components.FilaResultado
 import com.rumbocolombia.android.presentation.viewmodel.BuscarViewModel
+import com.rumbocolombia.android.presentation.viewmodel.UiState
 import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
-// Pantalla 3: buscar ciudades y atracciones por nombre.
+// Pantalla 3: buscar ciudades y atracciones por nombre en la API.
 @Composable
 fun BuscarScreen(
     onAbrirDetalle: (attractionId: Int) -> Unit,
@@ -38,55 +43,85 @@ fun BuscarScreen(
     var texto by remember { mutableStateOf("") }
 
     // Resultados que prepara el ViewModel
-    val ciudades by viewModel.ciudades.collectAsState()
-    val atracciones by viewModel.atracciones.collectAsState()
+    val estado by viewModel.estado.collectAsState()
+    val departamentos by viewModel.departamentos.collectAsState()
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        item {
-            Text(
-                text = "Buscar",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+    BuscarContenido(
+        texto = texto,
+        onTextoCambia = {
+            texto = it
+            viewModel.buscar(it)
+        },
+        estado = estado,
+        departamentos = departamentos,
+        onReintentar = viewModel::reintentar,
+        onAbrirDetalle = onAbrirDetalle,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun BuscarContenido(
+    texto: String,
+    onTextoCambia: (String) -> Unit,
+    estado: UiState<ResultadosBusqueda>?,
+    departamentos: Map<Int, String>,
+    onReintentar: () -> Unit,
+    onAbrirDetalle: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Text(
+            text = "Buscar",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        OutlinedTextField(
+            value = texto,
+            onValueChange = onTextoCambia,
+            label = { Text("Ciudad o atracción") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
+        )
+
+        when (estado) {
+            null -> Text(
+                "Escribe al menos 2 letras para buscar.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            OutlinedTextField(
-                value = texto,
-                onValueChange = {
-                    texto = it
-                    viewModel.buscar(it) // Cada letra pide nuevos resultados
-                },
-                label = { Text("Ciudad o atracción") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp)
-            )
-        }
-
-        if (texto.isNotBlank() && ciudades.isEmpty() && atracciones.isEmpty()) {
-            item { Text("No se encontraron resultados para \"$texto\".") }
-        }
-
-        if (ciudades.isNotEmpty()) {
-            item { Titulo("Ciudades") }
-            items(ciudades) { ciudad ->
-                val departamento = viewModel.departamentoDe(ciudad)?.name ?: ""
-                val poblacion = ciudad.population?.let { " · $it habitantes" } ?: ""
-                FilaResultado(titulo = ciudad.name, subtitulo = departamento + poblacion)
-            }
-        }
-
-        if (atracciones.isNotEmpty()) {
-            item { Titulo("Atracciones") }
-            items(atracciones) { item ->
-                FilaResultado(
-                    titulo = item.atraccion.name,
-                    subtitulo = listOfNotNull(item.ciudad?.name, item.departamento?.name).joinToString(", "),
-                    onClick = { onAbrirDetalle(item.atraccion.id) }
-                )
+            is UiState.Cargando -> Cargando()
+            is UiState.Error -> ErrorConReintentar(estado.mensaje, onReintentar)
+            is UiState.Exito -> {
+                val ciudades = estado.datos.ciudades
+                val atracciones = estado.datos.atracciones
+                if (ciudades.isEmpty() && atracciones.isEmpty()) {
+                    Text("No se encontraron resultados para \"$texto\".")
+                }
+                LazyColumn(contentPadding = PaddingValues(bottom = 16.dp)) {
+                    if (ciudades.isNotEmpty()) {
+                        item { Titulo("Ciudades") }
+                        items(ciudades) { ciudad ->
+                            val departamento = departamentos[ciudad.id] ?: ""
+                            val poblacion = ciudad.population?.let { " · $it habitantes" } ?: ""
+                            FilaResultado(titulo = ciudad.name, subtitulo = departamento + poblacion)
+                        }
+                    }
+                    if (atracciones.isNotEmpty()) {
+                        item { Titulo("Atracciones") }
+                        items(atracciones) { item ->
+                            FilaResultado(
+                                titulo = item.atraccion.name,
+                                subtitulo = listOfNotNull(item.ciudad?.name, item.departamento?.name).joinToString(", "),
+                                fotoUrl = item.atraccion.images?.firstOrNull(),
+                                onClick = { onAbrirDetalle(item.atraccion.id) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -102,11 +137,20 @@ private fun Titulo(texto: String) {
     )
 }
 
-// Vista previa en Android Studio (botón Split o Design), sin abrir el emulador
+// Vista previa en Android Studio con un resultado de ejemplo (sin internet)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun BuscarScreenPreview() {
     RumboColombiaTheme {
-        BuscarScreen(onAbrirDetalle = {}, viewModel = BuscarViewModel())
+        BuscarContenido(
+            texto = "bogo",
+            onTextoCambia = {},
+            estado = UiState.Exito(
+                ResultadosBusqueda(listOf(EjemplosPreview.ciudad), listOf(EjemplosPreview.atraccion))
+            ),
+            departamentos = mapOf(EjemplosPreview.ciudad.id to "Bogotá"),
+            onReintentar = {},
+            onAbrirDetalle = {}
+        )
     }
 }
