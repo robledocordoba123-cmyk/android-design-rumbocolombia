@@ -311,7 +311,7 @@ URL base: `https://api-colombia.com/api/v1/`
 
 ### Estructura de carpetas planeada
 
-Esto es solo el plan: **todavía no existe en el proyecto**, porque la actividad pide dejar el proyecto base sin código.
+Esto fue el plan inicial. El 27 de octubre, al empezar el código (sección 8), se ajustó a la estructura de la guía de la Sesión 4 (`data/` y `presentation/`); los nombres de los ViewModels y del Repositorio se mantienen.
 
 ```
 com.rumbocolombia.android
@@ -420,9 +420,9 @@ En la clase del 27 de octubre el instructor pidió avanzar el proyecto con la do
 com.rumbocolombia.android/
 ├── data/
 │   ├── dto/            Modelos.kt (las 5 data class)
-│   └── repository/     RumboRepository.kt, DatosDeEjemplo.kt
+│   └── repository/     TurismoRepository.kt, DatosDeEjemplo.kt
 ├── presentation/
-│   ├── viewmodel/      RumboViewModel.kt
+│   ├── viewmodel/      ExplorarViewModel.kt, DetalleViewModel.kt, BuscarViewModel.kt
 │   ├── screens/        ExplorarScreen.kt, DetalleScreen.kt, BuscarScreen.kt
 │   └── components/     Componentes.kt (tarjeta, fila y foto reutilizables)
 ├── ui/theme/           (viene por defecto)
@@ -432,9 +432,9 @@ com.rumbocolombia.android/
 | Capa | Archivo | Qué hace |
 |---|---|---|
 | **Modelo** | `data/dto/Modelos.kt` | Las 5 data class del diagrama ER: `Region`, `Department`, `City`, `TouristicAttraction` y `Airport`, con los mismos campos de la API. `population` y `surface` de la ciudad son `Int?` porque pueden venir vacíos. |
-| **Repositorio** | `data/repository/RumboRepository.kt` | Le entrega los datos al ViewModel. Por ahora los toma de `DatosDeEjemplo.kt` (2 regiones, 5 departamentos, 6 ciudades, 7 atracciones y 6 aeropuertos copiados de API Colombia); en la sesión de Retrofit solo cambia esta clase. |
-| **ViewModel** | `presentation/viewmodel/RumboViewModel.kt` | Guarda el estado con `MutableStateFlow` privado y `StateFlow` público: filtro por región, texto de búsqueda y resultados. Calcula el aeropuerto más cercano con la fórmula de Haversine. |
-| **Vistas** | `presentation/screens/` y `presentation/components/` | Las 3 pantallas diseñadas en Stitch, hechas en Jetpack Compose. Observan el ViewModel con `collectAsState()`. |
+| **Repositorio** | `data/repository/TurismoRepository.kt` | El mismo `TurismoRepository` del diagrama de la sección 4. Les entrega los datos a los 3 ViewModels; por ahora los toma de `DatosDeEjemplo.kt` (2 regiones, 5 departamentos, 6 ciudades, 7 atracciones y 6 aeropuertos copiados de API Colombia). Calcula el aeropuerto más cercano (fórmula de Haversine) y guarda la lista de atracciones guardadas con `guardarAtraccion` y `eliminarGuardada`. |
+| **ViewModels** | `presentation/viewmodel/` | Uno por pantalla, como en el diagrama de la sección 4 y en la guía: `ExplorarViewModel` (lista y filtro por región), `DetalleViewModel` (atracción, aeropuerto cercano y botón Guardar) y `BuscarViewModel` (resultados). Todos usan `MutableStateFlow` privado y `StateFlow` público. |
+| **Vistas** | `presentation/screens/` y `presentation/components/` | Las 3 pantallas diseñadas en Stitch, hechas en Jetpack Compose. Reciben su ViewModel con `viewModel()` y lo observan con `collectAsState()`. El texto que se escribe en Buscar es estado temporal de la pantalla con `remember { mutableStateOf("") }`. |
 | **Navegación** | `MainActivity.kt` | Barra inferior Explorar / Buscar; al tocar una atracción se abre el Detalle con su `attractionId`, igual que en el flujo de la sección 3. |
 
 Dependencias nuevas: `lifecycle-viewmodel-compose` (para `viewModel()`) y `material-icons-extended` (íconos).
@@ -449,7 +449,8 @@ Dependencias nuevas: `lifecycle-viewmodel-compose` (para `viewModel()`) y `mater
 
 ### Lo que falta (siguiente fase)
 
-- Hacer que `RumboRepository` pida los datos con **Retrofit** que llame a los endpoints de la sección 4.
+- Hacer que `TurismoRepository` pida los datos con **Retrofit** a los endpoints de la sección 4 (carpetas `data/api` y `data/network` de la guía).
 - Mostrar los estados **Cargando / Éxito / Error**.
 - Cargar las fotos con **Coil** (por ahora se ve un ícono en su lugar).
-- Guardar atracciones para ver sin internet con **Room**.
+- Las atracciones guardadas hoy viven en memoria; con **Room** quedarán guardadas en el celular.
+- Inyectar el Repositorio con **Hilt** en lugar de usar un `object`.

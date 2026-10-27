@@ -52,3 +52,18 @@ data class Airport(
     val longitude: Double,
     val cityId: Int
 )
+
+// Lo que necesita una tarjeta: la atracción con su ciudad, departamento
+// y región ya resueltos a partir de los ids.
+data class AtraccionConUbicacion(
+    val atraccion: TouristicAttraction,
+    val ciudad: City?,
+    val departamento: Department?,
+    val region: Region?
+)
+
+// Aeropuerto más cercano a una atracción y a cuántos km queda.
+data class AeropuertoCercano(
+    val aeropuerto: Airport,
+    val distanciaKm: Int
+)

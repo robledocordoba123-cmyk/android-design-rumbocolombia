@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.rumbocolombia.android.presentation.viewmodel.AtraccionConUbicacion
+import com.rumbocolombia.android.data.dto.AtraccionConUbicacion
 
 // Espacio para la foto. Las fotos reales se cargarán desde la URL
 // de la API con Coil en la siguiente fase.
@@ -47,9 +48,9 @@ fun FotoAtraccion(modifier: Modifier = Modifier, alto: Dp = 160.dp) {
     }
 }
 
-// Una tarjeta de atracción: se usa en Explorar y en Buscar.
+// Una tarjeta de atracción para la lista de Explorar.
 @Composable
-fun TarjetaAtraccion(item: AtraccionConUbicacion, onClick: () -> Unit) {
+fun TarjetaAtraccion(item: AtraccionConUbicacion, guardada: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,11 +61,21 @@ fun TarjetaAtraccion(item: AtraccionConUbicacion, onClick: () -> Unit) {
         Column {
             FotoAtraccion(alto = 140.dp)
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = item.atraccion.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = item.atraccion.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (guardada) {
+                        Icon(
+                            imageVector = Icons.Filled.Bookmark,
+                            contentDescription = "Guardada",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 Text(
                     text = listOfNotNull(item.ciudad?.name, item.departamento?.name).joinToString(", "),
                     style = MaterialTheme.typography.bodyMedium,

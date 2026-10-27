@@ -15,22 +15,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.components.FilaResultado
-import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
+import com.rumbocolombia.android.presentation.viewmodel.BuscarViewModel
 
 // Pantalla 3: buscar ciudades y atracciones por nombre.
 @Composable
 fun BuscarScreen(
-    viewModel: RumboViewModel,
     onAbrirDetalle: (attractionId: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: BuscarViewModel = viewModel()
 ) {
-    val texto by viewModel.textoBusqueda.collectAsState()
-    val ciudades by viewModel.ciudadesEncontradas.collectAsState()
-    val atracciones by viewModel.atraccionesEncontradas.collectAsState()
+    // Estado temporal de la pantalla: lo que el usuario va escribiendo
+    var texto by remember { mutableStateOf("") }
+
+    // Resultados que prepara el ViewModel
+    val ciudades by viewModel.ciudades.collectAsState()
+    val atracciones by viewModel.atracciones.collectAsState()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -44,7 +51,10 @@ fun BuscarScreen(
             )
             OutlinedTextField(
                 value = texto,
-                onValueChange = { viewModel.buscar(it) },
+                onValueChange = {
+                    texto = it
+                    viewModel.buscar(it) // Cada letra pide nuevos resultados
+                },
                 label = { Text("Ciudad o atracción") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 singleLine = true,

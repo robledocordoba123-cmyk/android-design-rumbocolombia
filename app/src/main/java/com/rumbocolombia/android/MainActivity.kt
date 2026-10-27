@@ -21,11 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.screens.BuscarScreen
 import com.rumbocolombia.android.presentation.screens.DetalleScreen
 import com.rumbocolombia.android.presentation.screens.ExplorarScreen
-import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
 import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 class MainActivity : ComponentActivity() {
@@ -45,7 +43,7 @@ enum class Pestana { EXPLORAR, BUSCAR }
 // Navegación simple con estado: la barra inferior cambia entre Explorar y
 // Buscar, y al tocar una atracción se abre el Detalle con su attractionId.
 @Composable
-fun RumboApp(viewModel: RumboViewModel = viewModel()) {
+fun RumboApp() {
     var pestana by remember { mutableStateOf(Pestana.EXPLORAR) }
     var attractionId by remember { mutableStateOf<Int?>(null) }
 
@@ -53,7 +51,6 @@ fun RumboApp(viewModel: RumboViewModel = viewModel()) {
     if (idAbierto != null) {
         BackHandler { attractionId = null }
         DetalleScreen(
-            viewModel = viewModel,
             attractionId = idAbierto,
             onVolver = { attractionId = null }
         )
@@ -81,8 +78,8 @@ fun RumboApp(viewModel: RumboViewModel = viewModel()) {
     ) { innerPadding ->
         val abrirDetalle: (Int) -> Unit = { attractionId = it }
         when (pestana) {
-            Pestana.EXPLORAR -> ExplorarScreen(viewModel, abrirDetalle, Modifier.padding(innerPadding))
-            Pestana.BUSCAR -> BuscarScreen(viewModel, abrirDetalle, Modifier.padding(innerPadding))
+            Pestana.EXPLORAR -> ExplorarScreen(abrirDetalle, Modifier.padding(innerPadding))
+            Pestana.BUSCAR -> BuscarScreen(abrirDetalle, Modifier.padding(innerPadding))
         }
     }
 }
