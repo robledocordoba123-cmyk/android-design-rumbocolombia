@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.ui.screen
+package com.rumbocolombia.android.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.rumbocolombia.android.viewmodel.RumboViewModel
+import com.rumbocolombia.android.presentation.components.FotoAtraccion
+import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
 
 // Pantalla 2: detalle de una atracción. Solo recibe el attractionId.
 @OptIn(ExperimentalMaterial3Api::class)

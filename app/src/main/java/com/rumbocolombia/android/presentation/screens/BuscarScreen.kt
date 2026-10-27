@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.ui.screen
+package com.rumbocolombia.android.presentation.screens
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.rumbocolombia.android.viewmodel.RumboViewModel
+import com.rumbocolombia.android.presentation.components.FilaResultado
+import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
 
 // Pantalla 3: buscar ciudades y atracciones por nombre.
 @Composable

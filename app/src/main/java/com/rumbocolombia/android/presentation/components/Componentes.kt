@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.ui.screen
+package com.rumbocolombia.android.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.rumbocolombia.android.viewmodel.AtraccionConUbicacion
+import com.rumbocolombia.android.presentation.viewmodel.AtraccionConUbicacion
 
 // Espacio para la foto. Las fotos reales se cargarán desde la URL
 // de la API con Coil en la siguiente fase.

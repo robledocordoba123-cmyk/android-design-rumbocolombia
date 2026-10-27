@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.ui.screen
+package com.rumbocolombia.android.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,7 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.rumbocolombia.android.viewmodel.RumboViewModel
+import com.rumbocolombia.android.presentation.components.TarjetaAtraccion
+import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
 
 // Pantalla 1: lista de atracciones con filtro por región.
 @Composable

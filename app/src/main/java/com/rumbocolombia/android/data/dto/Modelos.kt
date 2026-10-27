@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.model
+package com.rumbocolombia.android.data.dto
 
 // Modelo de datos de la app. Son las mismas 5 entidades del diagrama
 // entidad-relación (README, sección 2) y los campos se llaman igual que

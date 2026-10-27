@@ -22,11 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.rumbocolombia.android.ui.screen.BuscarScreen
-import com.rumbocolombia.android.ui.screen.DetalleScreen
-import com.rumbocolombia.android.ui.screen.ExplorarScreen
+import com.rumbocolombia.android.presentation.screens.BuscarScreen
+import com.rumbocolombia.android.presentation.screens.DetalleScreen
+import com.rumbocolombia.android.presentation.screens.ExplorarScreen
+import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
 import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
-import com.rumbocolombia.android.viewmodel.RumboViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

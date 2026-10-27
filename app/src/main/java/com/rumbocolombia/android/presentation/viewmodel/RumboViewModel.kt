@@ -1,12 +1,12 @@
-package com.rumbocolombia.android.viewmodel
+package com.rumbocolombia.android.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.rumbocolombia.android.data.DatosDeEjemplo
-import com.rumbocolombia.android.model.Airport
-import com.rumbocolombia.android.model.City
-import com.rumbocolombia.android.model.Department
-import com.rumbocolombia.android.model.Region
-import com.rumbocolombia.android.model.TouristicAttraction
+import com.rumbocolombia.android.data.dto.Airport
+import com.rumbocolombia.android.data.dto.City
+import com.rumbocolombia.android.data.dto.Department
+import com.rumbocolombia.android.data.dto.Region
+import com.rumbocolombia.android.data.dto.TouristicAttraction
+import com.rumbocolombia.android.data.repository.RumboRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,10 +33,10 @@ data class AeropuertoCercano(
 
 class RumboViewModel : ViewModel() {
 
-    private val datos = DatosDeEjemplo
+    private val repositorio = RumboRepository()
 
     // --- Explorar ---
-    val regiones: List<Region> = datos.regiones
+    val regiones: List<Region> = repositorio.obtenerRegiones()
 
     private val _regionSeleccionada = MutableStateFlow<Int?>(null) // null = todas
     val regionSeleccionada: StateFlow<Int?> = _regionSeleccionada.asStateFlow()
@@ -67,7 +67,7 @@ class RumboViewModel : ViewModel() {
             _atraccionesEncontradas.value = emptyList()
             return
         }
-        _ciudadesEncontradas.value = datos.ciudades.filter { it.name.contains(q, ignoreCase = true) }
+        _ciudadesEncontradas.value = repositorio.obtenerCiudades().filter { it.name.contains(q, ignoreCase = true) }
         _atraccionesEncontradas.value = filtrarPorRegion(null).filter {
             it.atraccion.name.contains(q, ignoreCase = true) ||
                 it.ciudad?.name?.contains(q, ignoreCase = true) == true
@@ -76,25 +76,25 @@ class RumboViewModel : ViewModel() {
 
     // --- Detalle ---
     fun obtenerAtraccion(id: Int): AtraccionConUbicacion? =
-        datos.atracciones.find { it.id == id }?.let { conUbicacion(it) }
+        repositorio.obtenerAtracciones().find { it.id == id }?.let { conUbicacion(it) }
 
     fun departamentoDe(ciudad: City): Department? =
-        datos.departamentos.find { it.id == ciudad.departmentId }
+        repositorio.obtenerDepartamentos().find { it.id == ciudad.departmentId }
 
     fun aeropuertoMasCercano(atraccion: TouristicAttraction): AeropuertoCercano? =
-        datos.aeropuertos
+        repositorio.obtenerAeropuertos()
             .map { AeropuertoCercano(it, distanciaKm(atraccion.latitude, atraccion.longitude, it.latitude, it.longitude)) }
             .minByOrNull { it.distanciaKm }
 
     private fun filtrarPorRegion(regionId: Int?): List<AtraccionConUbicacion> =
-        datos.atracciones
+        repositorio.obtenerAtracciones()
             .map { conUbicacion(it) }
             .filter { regionId == null || it.region?.id == regionId }
 
     private fun conUbicacion(atraccion: TouristicAttraction): AtraccionConUbicacion {
-        val ciudad = datos.ciudades.find { it.id == atraccion.cityId }
-        val departamento = datos.departamentos.find { it.id == ciudad?.departmentId }
-        val region = datos.regiones.find { it.id == departamento?.regionId }
+        val ciudad = repositorio.obtenerCiudades().find { it.id == atraccion.cityId }
+        val departamento = repositorio.obtenerDepartamentos().find { it.id == ciudad?.departmentId }
+        val region = repositorio.obtenerRegiones().find { it.id == departamento?.regionId }
         return AtraccionConUbicacion(atraccion, ciudad, departamento, region)
     }
 

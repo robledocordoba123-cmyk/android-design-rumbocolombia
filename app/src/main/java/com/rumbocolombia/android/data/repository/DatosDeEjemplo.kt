@@ -1,10 +1,10 @@
-package com.rumbocolombia.android.data
+package com.rumbocolombia.android.data.repository
 
-import com.rumbocolombia.android.model.Airport
-import com.rumbocolombia.android.model.City
-import com.rumbocolombia.android.model.Department
-import com.rumbocolombia.android.model.Region
-import com.rumbocolombia.android.model.TouristicAttraction
+import com.rumbocolombia.android.data.dto.Airport
+import com.rumbocolombia.android.data.dto.City
+import com.rumbocolombia.android.data.dto.Department
+import com.rumbocolombia.android.data.dto.Region
+import com.rumbocolombia.android.data.dto.TouristicAttraction
 
 // Datos de ejemplo copiados de API Colombia (api-colombia.com/api/v1).
 // Por ahora la app trabaja con esta lista local; en la siguiente fase
