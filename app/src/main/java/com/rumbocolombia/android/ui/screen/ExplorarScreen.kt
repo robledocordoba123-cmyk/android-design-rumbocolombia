@@ -1,0 +1,71 @@
+package com.rumbocolombia.android.ui.screen
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.rumbocolombia.android.viewmodel.RumboViewModel
+
+// Pantalla 1: lista de atracciones con filtro por región.
+@Composable
+fun ExplorarScreen(
+    viewModel: RumboViewModel,
+    onAbrirDetalle: (attractionId: Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val atracciones by viewModel.atracciones.collectAsState()
+    val regionSeleccionada by viewModel.regionSeleccionada.collectAsState()
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "Explora Colombia",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Chips de región
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChip(
+                        selected = regionSeleccionada == null,
+                        onClick = { viewModel.seleccionarRegion(null) },
+                        label = { Text("Todas") }
+                    )
+                }
+                items(viewModel.regiones) { region ->
+                    FilterChip(
+                        selected = regionSeleccionada == region.id,
+                        onClick = { viewModel.seleccionarRegion(region.id) },
+                        label = { Text(region.name) }
+                    )
+                }
+            }
+        }
+
+        if (atracciones.isEmpty()) {
+            item { Text("No hay atracciones en esta región.") }
+        } else {
+            items(atracciones) { item ->
+                TarjetaAtraccion(item = item, onClick = { onAbrirDetalle(item.atraccion.id) })
+            }
+        }
+    }
+}
