@@ -1,35 +1,57 @@
 package com.rumbocolombia.android.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.rumbocolombia.android.data.dto.AtraccionConUbicacion
-import com.rumbocolombia.android.data.dto.City
-import com.rumbocolombia.android.data.dto.Department
+import androidx.lifecycle.viewModelScope
+import com.rumbocolombia.android.data.dto.ResultadosBusqueda
 import com.rumbocolombia.android.data.repository.TurismoRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-// ViewModel de la pantalla Buscar: resultados de ciudades y atracciones.
+// ViewModel de la pantalla Buscar: pide a la API ciudades y atracciones.
 class BuscarViewModel : ViewModel() {
 
     private val repositorio = TurismoRepository
 
-    private val _ciudades = MutableStateFlow<List<City>>(emptyList())
-    val ciudades: StateFlow<List<City>> = _ciudades.asStateFlow()
+    // null = todavía no se ha escrito nada
+    private val _estado = MutableStateFlow<UiState<ResultadosBusqueda>?>(null)
+    val estado: StateFlow<UiState<ResultadosBusqueda>?> = _estado.asStateFlow()
 
-    private val _atracciones = MutableStateFlow<List<AtraccionConUbicacion>>(emptyList())
-    val atracciones: StateFlow<List<AtraccionConUbicacion>> = _atracciones.asStateFlow()
+    // Nombre del departamento de cada ciudad encontrada (id ciudad -> nombre)
+    private val _departamentos = MutableStateFlow<Map<Int, String>>(emptyMap())
+    val departamentos: StateFlow<Map<Int, String>> = _departamentos.asStateFlow()
+
+    private var busqueda: Job? = null
+    private var ultimoTexto = ""
 
     fun buscar(texto: String) {
-        val q = texto.trim()
-        if (q.isEmpty()) {
-            _ciudades.value = emptyList()
-            _atracciones.value = emptyList()
+        ultimoTexto = texto.trim()
+        // Si el usuario sigue escribiendo, se cancela la búsqueda anterior
+        busqueda?.cancel()
+        if (ultimoTexto.length < 2) {
+            _estado.value = null
             return
         }
-        _ciudades.value = repositorio.buscarCiudades(q)
-        _atracciones.value = repositorio.buscarAtracciones(q)
+        busqueda = viewModelScope.launch {
+            delay(400) // Espera a que deje de escribir para no llamar la API en cada letra
+            _estado.value = UiState.Cargando
+            try {
+                val resultados = repositorio.buscar(ultimoTexto)
+                _departamentos.value = resultados.ciudades.associate { ciudad ->
+                    ciudad.id to (repositorio.departamentoDe(ciudad)?.name ?: "")
+                }
+                _estado.value = UiState.Exito(resultados)
+            } catch (e: CancellationException) {
+                throw e // Búsqueda cancelada porque el usuario siguió escribiendo: no es un error
+            } catch (e: Exception) {
+                _estado.value = UiState.Error(mensajeDeError(e))
+            }
+        }
     }
 
-    fun departamentoDe(ciudad: City): Department? = repositorio.departamentoDe(ciudad)
+    fun reintentar() = buscar(ultimoTexto)
 }

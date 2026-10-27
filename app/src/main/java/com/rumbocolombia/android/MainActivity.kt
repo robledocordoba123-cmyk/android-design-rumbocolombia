@@ -21,6 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import coil.Coil
+import com.rumbocolombia.android.data.network.CargadorDeImagenes
 import com.rumbocolombia.android.presentation.screens.BuscarScreen
 import com.rumbocolombia.android.presentation.screens.DetalleScreen
 import com.rumbocolombia.android.presentation.screens.ExplorarScreen
@@ -29,6 +31,7 @@ import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Coil.setImageLoader(CargadorDeImagenes.crear(this))
         enableEdgeToEdge()
         setContent {
             RumboColombiaTheme {

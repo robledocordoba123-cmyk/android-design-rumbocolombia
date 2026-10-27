@@ -25,6 +25,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 6. [Video de presentación](#6-video-de-presentación) (Hito 6)
 7. [Cómo trabajamos (GitHub Flow)](#7-cómo-trabajamos-github-flow) (Hito 7)
 8. [Fase 2: vistas y modelo en código](#8-fase-2-vistas-y-modelo-en-código)
+9. [Fase 3: datos reales de API Colombia](#9-fase-3-datos-reales-de-api-colombia)
 
 ---
 
@@ -402,9 +403,13 @@ flowchart LR
 | [#3](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/3) | `docs/hito-2-modelo-datos` | Hito 2 llevado a `main` para corregir lo anterior | Aprobado por Davier |
 | [#4](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/4) | `docs/hito-3-pantallas` | Hito 3: pantallas en Google Stitch y flujo de navegación | Aprobado por Davier |
 | [#5](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/5) | `docs/hito-4-arquitectura` | Hito 4: arquitectura MVVM y tabla de endpoints | Aprobado por Davier |
-| — | `docs/hito-5-proyecto-base` | Hito 5: proyecto base con captura | — |
-| — | `docs/hito-6-video` | Hito 6: guion y sección del video | — |
-| — | `docs/hito-7-github-flow` | Hito 7: esta sección | — |
+| [#6](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/6) | `docs/hito-5-proyecto-base` | Hito 5: proyecto base con captura | Unido por Davier |
+| [#7](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/7) | `docs/hito-6-video` | Hito 6: guion y sección del video | Unido por Davier |
+| [#8](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/8) | `docs/hito-7-github-flow` | Hito 7: esta sección | Unido por Davier |
+| [#9](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/9) | `feature/fase-2-vistas-y-modelo` | Fase 2: modelo, repositorio, ViewModel y vistas | Unido por Manuela (Davier ausente por fuerza mayor) |
+| [#10](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/10) | `feature/fase-2-viewmodel-por-pantalla` | Fase 2: un ViewModel por pantalla y botón Guardar | Unido por Manuela (Davier ausente por fuerza mayor) |
+| [#11](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/11) | `feature/fase-2-previews` | Fase 2: `@Preview` de las 3 pantallas | Unido por Manuela (Davier ausente por fuerza mayor) |
+| #12 | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
 
 ### Lo que aprendimos
 
@@ -414,13 +419,15 @@ Al principio abrimos el PR del Hito 2 **sobre la rama del Hito 1** en lugar de `
 
 ## 8. Fase 2: vistas y modelo en código
 
+> **Nota:** en esta fase la app usaba `DatosDeEjemplo.kt`, una lista escrita a mano con datos copiados de la API. En la **Fase 3 (sección 9)** ese archivo se eliminó y ahora todos los datos llegan de API Colombia con Retrofit.
+
 En la clase del 27 de octubre el instructor pidió avanzar el proyecto con la documentación de la Sesión 4 (MVVM): **modelo de datos, ViewModel y vistas**, y que el proyecto compile. Seguimos la "receta de 4 pasos" de la guía (modelo → ViewModel → pantalla → probar en `MainActivity`) y la estructura de carpetas del tema *ViewModel y capas de la app*.
 
 ```
 com.rumbocolombia.android/
 ├── data/
 │   ├── dto/            Modelos.kt (las 5 data class)
-│   └── repository/     TurismoRepository.kt, DatosDeEjemplo.kt
+│   └── repository/     TurismoRepository.kt, DatosDeEjemplo.kt (eliminado en la Fase 3)
 ├── presentation/
 │   ├── viewmodel/      ExplorarViewModel.kt, DetalleViewModel.kt, BuscarViewModel.kt
 │   ├── screens/        ExplorarScreen.kt, DetalleScreen.kt, BuscarScreen.kt
@@ -441,18 +448,38 @@ Dependencias nuevas: `lifecycle-viewmodel-compose` (para `viewModel()`) y `mater
 
 Cada pantalla tiene su **`@Preview`**, como en la guía de la Sesión 1: en Android Studio se abre el archivo de la pantalla y con el botón **Split** o **Design** se ve la vista sin ejecutar el emulador.
 
-**Dato curioso de la API:** en `/Airport` los valores de `latitude` y `longitude` vienen intercambiados. En los datos de ejemplo ya están corregidos; el Repository tendrá que hacer lo mismo.
+---
 
-### La app corriendo (build OK)
+## 9. Fase 3: datos reales de API Colombia
 
-| Explorar | Detalle | Buscar |
-|---|---|---|
-| <img src="docs/app/01-explorar.png" width="220"> | <img src="docs/app/02-detalle.png" width="220"> | <img src="docs/app/03-buscar.png" width="220"> |
+El 27 de octubre el instructor revisó el proyecto con el **Inspector** de SmartClass. El reporte recomendó como siguiente paso *"integrar Retrofit y Gson para reemplazar los datos estáticos de DatosDeEjemplo.kt por peticiones HTTP reales"*, y también cargar las fotos con Coil. Esta fase hace eso, siguiendo lo que se planeó en la sección 4:
+
+| Lo planeado en la sección 4 | Cómo quedó en el código |
+|---|---|
+| **Fuente remota: Retrofit + Gson** | `data/api/ApiColombiaService.kt` tiene los endpoints de la tabla (atracciones, detalle, búsquedas, regiones, departamentos y aeropuertos). `data/network/RetrofitClient.kt` configura la URL base `https://api-colombia.com/api/v1/` y Gson. |
+| **Corrutinas (`suspend`, `Dispatchers.IO`)** | Cada endpoint es `suspend`. El `TurismoRepository` hace las peticiones con `withContext(Dispatchers.IO)` y los ViewModels las lanzan con `viewModelScope.launch`. |
+| **Estados Loading / Success / Error** | `presentation/viewmodel/UiState.kt` (`Cargando`, `Exito`, `Error`). Cada pantalla muestra un indicador de carga, los datos o el mensaje *"Sin conexión a internet"* con el botón **Reintentar**. |
+| **Imágenes con Coil** | `presentation/components/Componentes.kt` descarga la primera foto de cada atracción. `data/network/CargadorDeImagenes.kt` identifica la app ante Wikimedia (donde están muchas fotos), que rechaza las peticiones sin nombre. |
+| **Sin API Key** | API Colombia es pública: no hay ninguna clave en el código. Se agregó el permiso `INTERNET` en el `AndroidManifest.xml`. |
+
+**Se eliminó `DatosDeEjemplo.kt`.** Lo único que queda escrito a mano es `presentation/screens/EjemplosPreview.kt`: una atracción de ejemplo **solo para los `@Preview`** de Android Studio, que no pueden conectarse a internet. La app nunca la usa al ejecutarse.
+
+Cosas de la API que se resolvieron en el Repositorio:
+- En `/Airport` los valores de `latitude` y `longitude` vienen **intercambiados**; el repositorio los voltea antes de calcular el aeropuerto más cercano.
+- `/TouristicAttraction/search/{keyword}` no trae la ciudad de cada atracción; se toma de la lista de `/TouristicAttraction`.
+- Regiones, departamentos y aeropuertos casi no cambian, así que se piden una sola vez y se guardan en memoria.
+- La búsqueda espera 400 ms a que el usuario deje de escribir antes de llamar a la API, y cancela la búsqueda anterior.
+
+Dependencias nuevas: `retrofit`, `converter-gson` y `coil-compose`.
+
+### La app corriendo con datos reales (build OK)
+
+| Explorar | Detalle | Buscar | Sin internet |
+|---|---|---|---|
+| <img src="docs/app/01-explorar.png" width="200"> | <img src="docs/app/02-detalle.png" width="200"> | <img src="docs/app/03-buscar.png" width="200"> | <img src="docs/app/04-error.png" width="200"> |
 
 ### Lo que falta (siguiente fase)
 
-- Hacer que `TurismoRepository` pida los datos con **Retrofit** a los endpoints de la sección 4 (carpetas `data/api` y `data/network` de la guía).
-- Mostrar los estados **Cargando / Éxito / Error**.
-- Cargar las fotos con **Coil** (por ahora se ve un ícono en su lugar).
-- Las atracciones guardadas hoy viven en memoria; con **Room** quedarán guardadas en el celular.
-- Inyectar el Repositorio con **Hilt** en lugar de usar un `object`.
+- **Room:** las atracciones guardadas hoy viven en memoria; con Room quedarán guardadas en el celular y se podrán ver sin internet (Sesión 5).
+- **Hilt:** inyectar el Repositorio en lugar de usar un `object` (Sesión 6).
+- **Navegación:** pasar de la navegación con estado a Navigation Compose (Sesión 8).
