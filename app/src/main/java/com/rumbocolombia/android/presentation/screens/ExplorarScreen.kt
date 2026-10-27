@@ -15,18 +15,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rumbocolombia.android.presentation.components.TarjetaAtraccion
-import com.rumbocolombia.android.presentation.viewmodel.RumboViewModel
+import com.rumbocolombia.android.presentation.viewmodel.ExplorarViewModel
 
 // Pantalla 1: lista de atracciones con filtro por región.
 @Composable
 fun ExplorarScreen(
-    viewModel: RumboViewModel,
     onAbrirDetalle: (attractionId: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ExplorarViewModel = viewModel()
 ) {
+    // Observar el estado del ViewModel
     val atracciones by viewModel.atracciones.collectAsState()
     val regionSeleccionada by viewModel.regionSeleccionada.collectAsState()
+    val guardadas by viewModel.guardadas.collectAsState()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -65,7 +68,11 @@ fun ExplorarScreen(
             item { Text("No hay atracciones en esta región.") }
         } else {
             items(atracciones) { item ->
-                TarjetaAtraccion(item = item, onClick = { onAbrirDetalle(item.atraccion.id) })
+                TarjetaAtraccion(
+                    item = item,
+                    guardada = item.atraccion.id in guardadas,
+                    onClick = { onAbrirDetalle(item.atraccion.id) }
+                )
             }
         }
     }
