@@ -439,6 +439,8 @@ com.rumbocolombia.android/
 
 Dependencias nuevas: `lifecycle-viewmodel-compose` (para `viewModel()`) y `material-icons-extended` (íconos).
 
+Cada pantalla tiene su **`@Preview`**, como en la guía de la Sesión 1: en Android Studio se abre el archivo de la pantalla y con el botón **Split** o **Design** se ve la vista sin ejecutar el emulador.
+
 **Dato curioso de la API:** en `/Airport` los valores de `latitude` y `longitude` vienen intercambiados. En los datos de ejemplo ya están corregidos; el Repository tendrá que hacer lo mismo.
 
 ### La app corriendo (build OK)
