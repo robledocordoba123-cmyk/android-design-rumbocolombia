@@ -26,6 +26,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 7. [Cómo trabajamos (GitHub Flow)](#7-cómo-trabajamos-github-flow) (Hito 7)
 8. [Fase 2: vistas y modelo en código](#8-fase-2-vistas-y-modelo-en-código)
 9. [Fase 3: datos reales de API Colombia](#9-fase-3-datos-reales-de-api-colombia)
+10. [Fase 4: navegación type-safe](#10-fase-4-navegación-type-safe)
 
 ---
 
@@ -409,7 +410,8 @@ flowchart LR
 | [#9](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/9) | `feature/fase-2-vistas-y-modelo` | Fase 2: modelo, repositorio, ViewModel y vistas | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#10](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/10) | `feature/fase-2-viewmodel-por-pantalla` | Fase 2: un ViewModel por pantalla y botón Guardar | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#11](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/11) | `feature/fase-2-previews` | Fase 2: `@Preview` de las 3 pantallas | Unido por Manuela (Davier ausente por fuerza mayor) |
-| #12 | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
+| [#12](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/12) | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
+| #13 | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Pendiente de revisión |
 
 ### Lo que aprendimos
 
@@ -482,4 +484,35 @@ Dependencias nuevas: `retrofit`, `converter-gson` y `coil-compose`.
 
 - **Room:** las atracciones guardadas hoy viven en memoria; con Room quedarán guardadas en el celular y se podrán ver sin internet (Sesión 5).
 - **Hilt:** inyectar el Repositorio en lugar de usar un `object` (Sesión 6).
-- **Navegación:** pasar de la navegación con estado a Navigation Compose (Sesión 8).
+- **Navegación:** pasar de la navegación con estado a Navigation Compose (Sesión 8). ✅ Hecho en la [sección 10](#10-fase-4-navegación-type-safe).
+
+---
+
+## 10. Fase 4: navegación type-safe
+
+Seguimos el *Tutorial: Navegación Segura (Type-Safe) en Android con Jetpack Compose* de la documentación del curso. Antes la app cambiaba de pantalla con una variable de estado en `MainActivity`; ahora usa **Navigation Compose** con rutas tipadas.
+
+| Paso de la guía | Cómo quedó en Rumbo Colombia |
+|---|---|
+| **Dependencias** | En `libs.versions.toml`: `navigation-compose` 2.8.8, `kotlinx-serialization-json` 1.8.0 y el plugin `kotlin-serialization`. En `app/build.gradle.kts` se aplica el plugin y se agregan las dos librerías. |
+| **Rutas (`Destinations.kt`)** | `object ExplorarScreen` (sin parámetros), `data class DetalleScreen(val attractionId: Int)` (lleva el id de la atracción) y `object BuscarScreen`. Todas con `@Serializable`, así no se usan textos como `"detalle/123"`. |
+| **Pantallas con callbacks** | Las pantallas no reciben el `NavController`: reciben eventos. `ExplorarScreen` tiene `onNavigateToDetalle` y `onNavigateToBuscar` (botón **Ir a Buscar**); `DetalleScreen` y `BuscarScreen` tienen `onBack` (flecha ←). |
+| **Grafo (`AppNavigation.kt`)** | `rememberNavController()` y un `NavHost` que empieza en `ExplorarScreen`. Cada ruta se registra con `composable<...>`; el Detalle recupera el id con `backStackEntry.toRoute()` y para volver se usa `navController.popBackStack()`. |
+| **`MainActivity.kt`** | Solo llama a `AppNavigation()` dentro del tema. |
+
+```mermaid
+flowchart LR
+    MA[MainActivity] --> AN[AppNavigation / NavHost]
+    AN --> E[ExplorarScreen]
+    E -- "navigate(DetalleScreen(attractionId))" --> D[DetalleScreen]
+    E -- "navigate(BuscarScreen)" --> B[BuscarScreen]
+    B -- "navigate(DetalleScreen(attractionId))" --> D
+    D -- "popBackStack()" --> E
+    B -- "popBackStack()" --> E
+```
+
+### La app con la navegación nueva (build OK)
+
+| Explorar | Detalle | Buscar |
+|---|---|---|
+| <img src="docs/app/navegacion/01-explorar.png" width="200"> | <img src="docs/app/navegacion/02-detalle.png" width="200"> | <img src="docs/app/navegacion/03-buscar.png" width="200"> |
