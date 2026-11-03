@@ -411,7 +411,7 @@ flowchart LR
 | [#10](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/10) | `feature/fase-2-viewmodel-por-pantalla` | Fase 2: un ViewModel por pantalla y botón Guardar | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#11](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/11) | `feature/fase-2-previews` | Fase 2: `@Preview` de las 3 pantallas | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#12](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/12) | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
-| #13 | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Pendiente de revisión |
+| [#13](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/13) | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Aprobado por Davier |
 
 ### Lo que aprendimos
 
