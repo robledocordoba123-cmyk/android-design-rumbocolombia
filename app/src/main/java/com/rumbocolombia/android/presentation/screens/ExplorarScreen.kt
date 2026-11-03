@@ -4,12 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,10 +32,11 @@ import com.rumbocolombia.android.presentation.viewmodel.UiState
 import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 // Pantalla 1: lista de atracciones con filtro por región.
+// No recibe el NavController: recibe los eventos (callbacks) de navegación.
 @Composable
 fun ExplorarScreen(
-    onAbrirDetalle: (attractionId: Int) -> Unit,
-    modifier: Modifier = Modifier,
+    onNavigateToDetalle: (attractionId: Int) -> Unit,
+    onNavigateToBuscar: () -> Unit,
     viewModel: ExplorarViewModel = viewModel()
 ) {
     // Observar el estado del ViewModel
@@ -48,8 +52,8 @@ fun ExplorarScreen(
         guardadas = guardadas,
         onSeleccionarRegion = viewModel::seleccionarRegion,
         onReintentar = viewModel::cargar,
-        onAbrirDetalle = onAbrirDetalle,
-        modifier = modifier
+        onNavigateToDetalle = onNavigateToDetalle,
+        onNavigateToBuscar = onNavigateToBuscar
     )
 }
 
@@ -62,16 +66,27 @@ fun ExplorarContenido(
     guardadas: Set<Int>,
     onSeleccionarRegion: (Int?) -> Unit,
     onReintentar: () -> Unit,
-    onAbrirDetalle: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToDetalle: (Int) -> Unit,
+    onNavigateToBuscar: () -> Unit
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Scaffold { innerPadding ->
+    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         Text(
             text = "Explora Colombia",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)
         )
+
+        // Botón para ir a Buscar
+        OutlinedButton(
+            onClick = onNavigateToBuscar,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+        ) {
+            Text("Ir a Buscar")
+        }
 
         // Chips de región (las 6 regiones vienen de GET /Region)
         LazyRow(
@@ -109,13 +124,14 @@ fun ExplorarContenido(
                             TarjetaAtraccion(
                                 item = item,
                                 guardada = item.atraccion.id in guardadas,
-                                onClick = { onAbrirDetalle(item.atraccion.id) }
+                                onClick = { onNavigateToDetalle(item.atraccion.id) }
                             )
                         }
                     }
                 }
             }
         }
+    }
     }
 }
 
@@ -132,7 +148,8 @@ private fun ExplorarScreenPreview() {
             guardadas = emptySet(),
             onSeleccionarRegion = {},
             onReintentar = {},
-            onAbrirDetalle = {}
+            onNavigateToDetalle = {},
+            onNavigateToBuscar = {}
         )
     }
 }
@@ -141,7 +158,7 @@ private fun ExplorarScreenPreview() {
 @Composable
 private fun ExplorarCargandoPreview() {
     RumboColombiaTheme {
-        ExplorarContenido(UiState.Cargando, emptyList(), null, emptySet(), {}, {}, {})
+        ExplorarContenido(UiState.Cargando, emptyList(), null, emptySet(), {}, {}, {}, {})
     }
 }
 
@@ -149,6 +166,6 @@ private fun ExplorarCargandoPreview() {
 @Composable
 private fun ExplorarErrorPreview() {
     RumboColombiaTheme {
-        ExplorarContenido(UiState.Error("Sin conexión a internet"), emptyList(), null, emptySet(), {}, {}, {})
+        ExplorarContenido(UiState.Error("Sin conexión a internet"), emptyList(), null, emptySet(), {}, {}, {}, {})
     }
 }

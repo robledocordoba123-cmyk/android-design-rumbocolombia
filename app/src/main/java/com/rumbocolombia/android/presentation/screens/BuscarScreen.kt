@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,8 +40,8 @@ import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 // Pantalla 3: buscar ciudades y atracciones por nombre en la API.
 @Composable
 fun BuscarScreen(
-    onAbrirDetalle: (attractionId: Int) -> Unit,
-    modifier: Modifier = Modifier,
+    onNavigateToDetalle: (attractionId: Int) -> Unit,
+    onBack: () -> Unit,
     viewModel: BuscarViewModel = viewModel()
 ) {
     // Estado temporal de la pantalla: lo que el usuario va escribiendo
@@ -55,11 +60,12 @@ fun BuscarScreen(
         estado = estado,
         departamentos = departamentos,
         onReintentar = viewModel::reintentar,
-        onAbrirDetalle = onAbrirDetalle,
-        modifier = modifier
+        onNavigateToDetalle = onNavigateToDetalle,
+        onBack = onBack
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuscarContenido(
     texto: String,
@@ -67,16 +73,22 @@ fun BuscarContenido(
     estado: UiState<ResultadosBusqueda>?,
     departamentos: Map<Int, String>,
     onReintentar: () -> Unit,
-    onAbrirDetalle: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToDetalle: (Int) -> Unit,
+    onBack: () -> Unit
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        Text(
-            text = "Buscar",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 16.dp)
-        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Buscar") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+    Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp)) {
         OutlinedTextField(
             value = texto,
             onValueChange = onTextoCambia,
@@ -117,13 +129,14 @@ fun BuscarContenido(
                                 titulo = item.atraccion.name,
                                 subtitulo = listOfNotNull(item.ciudad?.name, item.departamento?.name).joinToString(", "),
                                 fotoUrl = item.atraccion.images?.firstOrNull(),
-                                onClick = { onAbrirDetalle(item.atraccion.id) }
+                                onClick = { onNavigateToDetalle(item.atraccion.id) }
                             )
                         }
                     }
                 }
             }
         }
+    }
     }
 }
 
@@ -150,7 +163,8 @@ private fun BuscarScreenPreview() {
             ),
             departamentos = mapOf(EjemplosPreview.ciudad.id to "Bogotá"),
             onReintentar = {},
-            onAbrirDetalle = {}
+            onNavigateToDetalle = {},
+            onBack = {}
         )
     }
 }

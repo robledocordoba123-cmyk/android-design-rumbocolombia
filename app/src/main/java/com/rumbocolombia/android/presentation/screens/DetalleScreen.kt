@@ -46,7 +46,7 @@ import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 @Composable
 fun DetalleScreen(
     attractionId: Int,
-    onVolver: () -> Unit,
+    onBack: () -> Unit,
     viewModel: DetalleViewModel = viewModel()
 ) {
     // Cuando llega un attractionId nuevo, el ViewModel pide sus datos a la API
@@ -58,7 +58,7 @@ fun DetalleScreen(
     DetalleContenido(
         estado = estado,
         estaGuardada = attractionId in guardadas,
-        onVolver = onVolver,
+        onBack = onBack,
         onReintentar = { viewModel.cargar(attractionId) },
         onCambiarGuardada = { viewModel.cambiarGuardada(attractionId) }
     )
@@ -69,7 +69,7 @@ fun DetalleScreen(
 fun DetalleContenido(
     estado: UiState<DetalleAtraccion>,
     estaGuardada: Boolean,
-    onVolver: () -> Unit,
+    onBack: () -> Unit,
     onReintentar: () -> Unit,
     onCambiarGuardada: () -> Unit
 ) {
@@ -80,7 +80,7 @@ fun DetalleContenido(
             TopAppBar(
                 title = { Text(titulo) },
                 navigationIcon = {
-                    IconButton(onClick = onVolver) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
@@ -166,7 +166,7 @@ private fun DetalleScreenPreview() {
         DetalleContenido(
             estado = UiState.Exito(EjemplosPreview.detalle),
             estaGuardada = false,
-            onVolver = {},
+            onBack = {},
             onReintentar = {},
             onCambiarGuardada = {}
         )
