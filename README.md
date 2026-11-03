@@ -412,7 +412,8 @@ flowchart LR
 | [#11](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/11) | `feature/fase-2-previews` | Fase 2: `@Preview` de las 3 pantallas | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#12](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/12) | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#13](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/13) | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Aprobado por Davier |
-| #15 | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Pendiente de revisión |
+| [#14](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/14) | `docs/tabla-pr-13` | README: fila del PR #13 en este historial | Aprobado por Davier |
+| [#15](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/15) | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Aprobado por Davier |
 
 ### Lo que aprendimos
 
