@@ -19,3 +19,9 @@ data class DetalleScreen(
 // 3. Ruta sin parámetros
 @Serializable
 object BuscarScreen
+
+// 4. Nueva vista: Perfil de Usuario (necesita argumentos)
+@Serializable
+data class ProfileScreen(
+    val username: String
+)
