@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -37,6 +38,7 @@ import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 fun ExplorarScreen(
     onNavigateToDetalle: (attractionId: Int) -> Unit,
     onNavigateToBuscar: () -> Unit,
+    onNavigateToProfile: (username: String) -> Unit, // <- NUEVO CALLBACK
     viewModel: ExplorarViewModel = viewModel()
 ) {
     // Observar el estado del ViewModel
@@ -53,7 +55,8 @@ fun ExplorarScreen(
         onSeleccionarRegion = viewModel::seleccionarRegion,
         onReintentar = viewModel::cargar,
         onNavigateToDetalle = onNavigateToDetalle,
-        onNavigateToBuscar = onNavigateToBuscar
+        onNavigateToBuscar = onNavigateToBuscar,
+        onNavigateToProfile = onNavigateToProfile
     )
 }
 
@@ -67,7 +70,8 @@ fun ExplorarContenido(
     onSeleccionarRegion: (Int?) -> Unit,
     onReintentar: () -> Unit,
     onNavigateToDetalle: (Int) -> Unit,
-    onNavigateToBuscar: () -> Unit
+    onNavigateToBuscar: () -> Unit,
+    onNavigateToProfile: (username: String) -> Unit
 ) {
     Scaffold { innerPadding ->
     Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
@@ -86,6 +90,15 @@ fun ExplorarContenido(
                 .padding(start = 16.dp, top = 8.dp, end = 16.dp)
         ) {
             Text("Ir a Buscar")
+        }
+
+        Button(
+            onClick = { onNavigateToProfile("usuario_demo") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+        ) {
+            Text("Ver Perfil")
         }
 
         // Chips de región (las 6 regiones vienen de GET /Region)
@@ -149,7 +162,8 @@ private fun ExplorarScreenPreview() {
             onSeleccionarRegion = {},
             onReintentar = {},
             onNavigateToDetalle = {},
-            onNavigateToBuscar = {}
+            onNavigateToBuscar = {},
+            onNavigateToProfile = {}
         )
     }
 }
@@ -158,7 +172,7 @@ private fun ExplorarScreenPreview() {
 @Composable
 private fun ExplorarCargandoPreview() {
     RumboColombiaTheme {
-        ExplorarContenido(UiState.Cargando, emptyList(), null, emptySet(), {}, {}, {}, {})
+        ExplorarContenido(UiState.Cargando, emptyList(), null, emptySet(), {}, {}, {}, {}, {})
     }
 }
 
@@ -166,6 +180,6 @@ private fun ExplorarCargandoPreview() {
 @Composable
 private fun ExplorarErrorPreview() {
     RumboColombiaTheme {
-        ExplorarContenido(UiState.Error("Sin conexión a internet"), emptyList(), null, emptySet(), {}, {}, {}, {})
+        ExplorarContenido(UiState.Error("Sin conexión a internet"), emptyList(), null, emptySet(), {}, {}, {}, {}, {})
     }
 }

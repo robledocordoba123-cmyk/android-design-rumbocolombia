@@ -26,6 +26,9 @@ fun AppNavigation() {
                 onNavigateToBuscar = {
                     // Navegar al objeto estático
                     navController.navigate(BuscarScreen)
+                },
+                onNavigateToProfile = { username ->
+                    navController.navigate(ProfileScreen(username = username)) // <- NAVEGACIÓN A PERFIL
                 }
             )
         }
@@ -49,6 +52,18 @@ fun AppNavigation() {
                 onNavigateToDetalle = { attractionId ->
                     navController.navigate(DetalleScreen(attractionId = attractionId))
                 },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // NUEVO DESTINO REGISTRADO
+        composable<ProfileScreen> { backStackEntry ->
+            val profileArgs: ProfileScreen = backStackEntry.toRoute()
+
+            ProfileScreen(
+                username = profileArgs.username,
                 onBack = {
                     navController.popBackStack()
                 }
