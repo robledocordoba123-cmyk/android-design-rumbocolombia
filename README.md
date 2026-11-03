@@ -412,6 +412,7 @@ flowchart LR
 | [#11](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/11) | `feature/fase-2-previews` | Fase 2: `@Preview` de las 3 pantallas | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#12](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/12) | `feature/fase-3-api-real-retrofit` | Fase 3: datos reales con Retrofit, estados y fotos con Coil | Unido por Manuela (Davier ausente por fuerza mayor) |
 | [#13](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/13) | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Aprobado por Davier |
+| #15 | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Pendiente de revisión |
 
 ### Lo que aprendimos
 
@@ -516,3 +517,20 @@ flowchart LR
 | Explorar | Detalle | Buscar |
 |---|---|---|
 | <img src="docs/app/navegacion/01-explorar.png" width="200"> | <img src="docs/app/navegacion/02-detalle.png" width="200"> | <img src="docs/app/navegacion/03-buscar.png" width="200"> |
+
+### Nueva vista: Perfil de Usuario
+
+Seguimos la *Guía Paso a Paso: Cómo Agregar una Nueva Vista a la Navegación* de la documentación del curso, con sus 4 pasos:
+
+| Paso de la guía | Qué se hizo |
+|---|---|
+| **1. Definir la ruta** | En `Destinations.kt`: `@Serializable data class ProfileScreen(val username: String)`. |
+| **2. Crear la pantalla** | `presentation/screens/ProfileScreen.kt`: barra superior *Perfil de Usuario* con ←, el texto *👤 Usuario: …* y el botón **Regresar**. |
+| **3. Registrar la ruta** | En el `NavHost` de `AppNavigation.kt`: `composable<ProfileScreen>`, que recupera el `username` con `toRoute()` y vuelve con `popBackStack()`. |
+| **4. Disparar la navegación** | `ExplorarScreen` recibe el callback `onNavigateToProfile` y tiene el botón **Ver Perfil**, que navega con `navController.navigate(ProfileScreen(username = "usuario_demo"))`. |
+
+**Verificación:** se ejecutó la app, se tocó **Ver Perfil**, la pantalla mostró el usuario recibido y **Regresar** volvió a Explorar.
+
+| Explorar con "Ver Perfil" | Perfil de Usuario |
+|---|---|
+| <img src="docs/app/navegacion/04-explorar-ver-perfil.png" width="200"> | <img src="docs/app/navegacion/05-perfil.png" width="200"> |
