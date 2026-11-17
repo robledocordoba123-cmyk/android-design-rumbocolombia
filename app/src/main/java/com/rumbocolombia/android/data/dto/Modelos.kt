@@ -2,14 +2,19 @@ package com.rumbocolombia.android.data.dto
 
 // Modelo de datos de la app. Son las mismas 5 entidades del diagrama
 // entidad-relación (README, sección 2) y los campos se llaman igual que
-// en el JSON de API Colombia, así Gson los llena directamente.
+// en el JSON de API Colombia. La anotación @Serializable permite que
+// Kotlinx Serialization convierta el JSON en estos objetos automáticamente.
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Region(
     val id: Int,
     val name: String,
     val description: String?
 )
 
+@Serializable
 data class Department(
     val id: Int,
     val name: String,
@@ -22,6 +27,7 @@ data class Department(
     val cityCapitalId: Int?  // Ciudad capital
 )
 
+@Serializable
 data class City(
     val id: Int,
     val name: String,
@@ -32,17 +38,19 @@ data class City(
     val departmentId: Int
 )
 
+@Serializable
 data class TouristicAttraction(
     val id: Int,
     val name: String,
     val description: String?,
     val images: List<String>?,
-    val latitude: Double,    // En el JSON viene como texto; Gson lo convierte
+    val latitude: Double,    // En el JSON viene como texto y se convierte a número
     val longitude: Double,
     val cityId: Int,
     val city: City?          // La API manda la ciudad dentro de la atracción
 )
 
+@Serializable
 data class Airport(
     val id: Int,
     val name: String,

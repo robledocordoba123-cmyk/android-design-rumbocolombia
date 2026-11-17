@@ -416,6 +416,7 @@ flowchart LR
 | [#15](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/15) | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Aprobado por Davier |
 | [#16](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/16) | `docs/tabla-pr-14-15` | README: filas de los PR #14 y #15 en este historial | Aprobado por Davier |
 | [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Pendiente de revisión |
+| [#18](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/18) | `feature/capa-de-red` | Capa de Red: `ApiClient` con Kotlinx Serialization y OkHttp Logging | Pendiente de revisión |
 
 ### Lo que aprendimos
 
@@ -564,3 +565,28 @@ flowchart LR
 ```
 
 **Verificación (build OK):** en el emulador cargaron Explorar, el Detalle, el botón **Guardar sin internet** (la marca aparece al volver a Explorar) y Buscar con *Medellín*. Sin internet, `onFailure` muestra *Sin conexión a internet* con **Reintentar**.
+
+---
+
+## 12. Capa de Red (Network Layer)
+
+Seguimos el *Tutorial Paso a Paso: Cómo Crear la Capa de Red (Network Layer) y Consumir APIs en Android* de la documentación del curso. Antes Retrofit usaba **Gson**; ahora usa **Kotlinx Serialization** y **OkHttp** con registro de las peticiones.
+
+| Lista de comprobación de la guía | Cómo quedó en Rumbo Colombia |
+|---|---|
+| **Permiso `INTERNET`** | Ya estaba en `AndroidManifest.xml` desde la Fase 3. |
+| **Dependencias** | En `libs.versions.toml`: `retrofit-core` y `retrofit-kotlinx-serialization` (2.11.0) y `okhttp-logging` (4.12.0). Se quitó `converter-gson`. En `app/build.gradle.kts`: `libs.retrofit.core`, `libs.retrofit.kotlinx.serialization` y `libs.okhttp.logging`. |
+| **DTO con `@Serializable`** | `Region`, `Department`, `City`, `TouristicAttraction` y `Airport` en `data/dto/Modelos.kt`. |
+| **`ApiClient.kt` (singleton)** | Nuevo `object ApiClient` en `data/api/`: `BASE_URL` que termina en `/`, `Json { ignoreUnknownKeys, coerceInputValues, isLenient, explicitNulls = false, encodeDefaults = false }`, `HttpLoggingInterceptor` con nivel `BODY`, `OkHttpClient`, `retrofit by lazy` y `apiColombiaService by lazy`. |
+| **Funciones `suspend` y rutas** | `ApiColombiaService` ya tenía sus 7 endpoints `suspend` con las rutas de API Colombia (`Region`, `TouristicAttraction`, `City/search/{keyword}`, …). |
+| **Consumo desde el Repositorio** | `TurismoRepositoryImpl(private val api: ApiColombiaService = ApiClient.apiColombiaService)`. `data/network/RetrofitClient.kt` se deja como acceso por el paquete `data.network` (`val api get() = ApiClient.apiColombiaService`), igual que en la referencia del proyecto. |
+
+```mermaid
+flowchart TB
+    S[API Colombia - JSON] --> O[OkHttp + HttpLoggingInterceptor]
+    O --> R[Retrofit + Kotlinx Serialization]
+    R --> I[ApiColombiaService]
+    I --> RE[TurismoRepositoryImpl]
+```
+
+**Verificación (build OK):** en el Logcat aparecen las peticiones (`--> GET https://api-colombia.com/api/v1/Region` y `<-- 200 OK`). En el emulador cargaron Explorar, el Detalle con la ubicación y el aeropuerto más cercano, y Buscar con *Cartagena*. Las coordenadas que la API manda como texto se convierten bien a número.
