@@ -415,9 +415,9 @@ flowchart LR
 | [#14](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/14) | `docs/tabla-pr-13` | README: fila del PR #13 en este historial | Aprobado por Davier |
 | [#15](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/15) | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Aprobado por Davier |
 | [#16](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/16) | `docs/tabla-pr-14-15` | README: filas de los PR #14 y #15 en este historial | Aprobado por Davier |
-| [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Pendiente de revisión |
-| [#18](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/18) | `feature/capa-de-red` | Capa de Red: `ApiClient` con Kotlinx Serialization y OkHttp Logging | Pendiente de revisión |
-| [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Pendiente de revisión |
+| [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Aprobado por Davier |
+| [#18](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/18) | `feature/capa-de-red` | Capa de Red: `ApiClient` con Kotlinx Serialization y OkHttp Logging | Aprobado por Davier |
+| [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Aprobado por Davier |
 
 ### Lo que aprendimos
 
