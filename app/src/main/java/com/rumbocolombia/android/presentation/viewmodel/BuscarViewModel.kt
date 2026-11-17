@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rumbocolombia.android.data.dto.ResultadosBusqueda
 import com.rumbocolombia.android.data.repository.TurismoRepository
+import com.rumbocolombia.android.data.repository.TurismoRepositoryImpl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,9 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 // ViewModel de la pantalla Buscar: pide a la API ciudades y atracciones.
-class BuscarViewModel : ViewModel() {
-
-    private val repositorio = TurismoRepository
+class BuscarViewModel(
+    private val repositorio: TurismoRepository = TurismoRepositoryImpl()
+) : ViewModel() {
 
     // null = todavía no se ha escrito nada
     private val _estado = MutableStateFlow<UiState<ResultadosBusqueda>?>(null)
@@ -39,17 +40,19 @@ class BuscarViewModel : ViewModel() {
         busqueda = viewModelScope.launch {
             delay(400) // Espera a que deje de escribir para no llamar la API en cada letra
             _estado.value = UiState.Cargando
-            try {
-                val resultados = repositorio.buscar(ultimoTexto)
-                _departamentos.value = resultados.ciudades.associate { ciudad ->
-                    ciudad.id to (repositorio.departamentoDe(ciudad)?.name ?: "")
+
+            repositorio.buscar(ultimoTexto)
+                .onSuccess { resultados ->
+                    _departamentos.value = resultados.ciudades.associate { ciudad ->
+                        ciudad.id to (repositorio.departamentoDe(ciudad).getOrNull()?.name ?: "")
+                    }
+                    _estado.value = UiState.Exito(resultados)
                 }
-                _estado.value = UiState.Exito(resultados)
-            } catch (e: CancellationException) {
-                throw e // Búsqueda cancelada porque el usuario siguió escribiendo: no es un error
-            } catch (e: Exception) {
-                _estado.value = UiState.Error(mensajeDeError(e))
-            }
+                .onFailure { error ->
+                    // Búsqueda cancelada porque el usuario siguió escribiendo: no es un error
+                    if (error is CancellationException) throw error
+                    _estado.value = UiState.Error(mensajeDeError(error))
+                }
         }
     }
 

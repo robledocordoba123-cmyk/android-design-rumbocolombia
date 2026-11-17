@@ -22,62 +22,107 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// El Repositorio es el "jefe" de la capa de datos: los ViewModels le piden
-// los datos a él y no saben de dónde salen. Ahora los pide a API Colombia
-// con Retrofit. Es un object para que las 3 pantallas compartan los mismos
-// datos (en la sesión de Hilt se inyectará en lugar de usar object).
-object TurismoRepository {
-
-    private val api: ApiColombiaService = RetrofitClient.api
-
-    // Regiones, departamentos y aeropuertos casi no cambian: se piden una
-    // vez y se guardan en memoria para no repetir la petición.
-    private var regiones: List<Region>? = null
-    private var departamentos: List<Department>? = null
-    private var aeropuertos: List<Airport>? = null
-
-    // Última lista de atracciones recibida. La búsqueda de la API no trae la
-    // ciudad de cada atracción, así que se toma de aquí.
-    private var atracciones: List<TouristicAttraction> = emptyList()
+/**
+ * Interfaz que define las operaciones que el Repositorio de Turismo ofrece a la aplicación.
+ * Los ViewModels le piden los datos a ella y no saben de dónde salen.
+ */
+interface TurismoRepository {
+    suspend fun obtenerRegiones(): Result<List<Region>>
+    suspend fun obtenerAtracciones(): Result<List<AtraccionConUbicacion>>
+    suspend fun obtenerDetalle(id: Int): Result<DetalleAtraccion>
+    suspend fun buscar(texto: String): Result<ResultadosBusqueda>
+    suspend fun departamentoDe(ciudad: City): Result<Department?>
 
     // Atracciones guardadas para ver sin internet (por ahora en memoria;
     // en la sesión de Room se guardarán en el celular).
-    private val _guardadas = MutableStateFlow<Set<Int>>(emptySet())
-    val guardadas: StateFlow<Set<Int>> = _guardadas.asStateFlow()
+    val guardadas: StateFlow<Set<Int>>
+    fun guardarAtraccion(id: Int)
+    fun eliminarGuardada(id: Int)
+}
+
+/**
+ * Implementación concreta del Repositorio que utiliza la API de red (ApiColombiaService).
+ * Cada función usa runCatching: si la petición sale bien devuelve Result.success,
+ * y si falla (sin internet, error 404/500, JSON inválido) devuelve Result.failure
+ * sin que la app se cierre.
+ */
+class TurismoRepositoryImpl(
+    private val api: ApiColombiaService = RetrofitClient.api
+) : TurismoRepository {
+
+    // Cada pantalla crea su propio TurismoRepositoryImpl, así que lo que deben
+    // compartir las 3 pantallas (memoria de datos y guardadas) va en el
+    // companion object.
+    private companion object {
+        // Regiones, departamentos y aeropuertos casi no cambian: se piden una
+        // vez y se guardan en memoria para no repetir la petición.
+        var regiones: List<Region>? = null
+        var departamentos: List<Department>? = null
+        var aeropuertos: List<Airport>? = null
+
+        // Última lista de atracciones recibida. La búsqueda de la API no trae la
+        // ciudad de cada atracción, así que se toma de aquí.
+        var atracciones: List<TouristicAttraction> = emptyList()
+
+        val _guardadas = MutableStateFlow<Set<Int>>(emptySet())
+    }
+
+    override val guardadas: StateFlow<Set<Int>> = _guardadas.asStateFlow()
 
     // Todas las peticiones van en Dispatchers.IO, el hilo para red.
-    suspend fun obtenerRegiones(): List<Region> = withContext(Dispatchers.IO) {
-        regiones ?: api.obtenerRegiones().also { regiones = it }
+    override suspend fun obtenerRegiones(): Result<List<Region>> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                regiones ?: api.obtenerRegiones().also { regiones = it }
+            }
+        }
     }
 
-    suspend fun obtenerAtracciones(): List<AtraccionConUbicacion> = withContext(Dispatchers.IO) {
-        val lista = api.obtenerAtracciones().also { atracciones = it }
-        lista.map { conUbicacion(it) }
+    override suspend fun obtenerAtracciones(): Result<List<AtraccionConUbicacion>> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val lista = api.obtenerAtracciones().also { atracciones = it }
+                lista.map { conUbicacion(it) }
+            }
+        }
     }
 
-    suspend fun obtenerDetalle(id: Int): DetalleAtraccion = withContext(Dispatchers.IO) {
-        val atraccion = api.obtenerAtraccion(id)
-        DetalleAtraccion(
-            item = conUbicacion(atraccion),
-            aeropuertoCercano = aeropuertoMasCercano(atraccion)
-        )
+    override suspend fun obtenerDetalle(id: Int): Result<DetalleAtraccion> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val atraccion = api.obtenerAtraccion(id)
+                DetalleAtraccion(
+                    item = conUbicacion(atraccion),
+                    aeropuertoCercano = aeropuertoMasCercano(atraccion)
+                )
+            }
+        }
     }
 
-    suspend fun buscar(texto: String): ResultadosBusqueda = withContext(Dispatchers.IO) {
-        ResultadosBusqueda(
-            ciudades = api.buscarCiudades(texto),
-            atracciones = api.buscarAtracciones(texto).map { conUbicacion(it) }
-        )
+    override suspend fun buscar(texto: String): Result<ResultadosBusqueda> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                ResultadosBusqueda(
+                    ciudades = api.buscarCiudades(texto),
+                    atracciones = api.buscarAtracciones(texto).map { conUbicacion(it) }
+                )
+            }
+        }
     }
 
-    suspend fun departamentoDe(ciudad: City): Department? =
-        obtenerDepartamentos().find { it.id == ciudad.departmentId }
+    override suspend fun departamentoDe(ciudad: City): Result<Department?> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                obtenerDepartamentos().find { it.id == ciudad.departmentId }
+            }
+        }
+    }
 
-    fun guardarAtraccion(id: Int) {
+    override fun guardarAtraccion(id: Int) {
         _guardadas.value = _guardadas.value + id
     }
 
-    fun eliminarGuardada(id: Int) {
+    override fun eliminarGuardada(id: Int) {
         _guardadas.value = _guardadas.value - id
     }
 
@@ -95,7 +140,7 @@ object TurismoRepository {
     private suspend fun conUbicacion(atraccion: TouristicAttraction): AtraccionConUbicacion {
         val ciudad = atraccion.city ?: ciudadDe(atraccion)
         val departamento = obtenerDepartamentos().find { it.id == ciudad?.departmentId }
-        val region = obtenerRegiones().find { it.id == departamento?.regionId }
+        val region = obtenerRegiones().getOrThrow().find { it.id == departamento?.regionId }
         return AtraccionConUbicacion(atraccion, ciudad, departamento, region)
     }
 
