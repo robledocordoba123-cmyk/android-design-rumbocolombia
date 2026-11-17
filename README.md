@@ -417,6 +417,7 @@ flowchart LR
 | [#16](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/16) | `docs/tabla-pr-14-15` | README: filas de los PR #14 y #15 en este historial | Aprobado por Davier |
 | [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Pendiente de revisión |
 | [#18](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/18) | `feature/capa-de-red` | Capa de Red: `ApiClient` con Kotlinx Serialization y OkHttp Logging | Pendiente de revisión |
+| [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Pendiente de revisión |
 
 ### Lo que aprendimos
 
@@ -590,3 +591,18 @@ flowchart TB
 ```
 
 **Verificación (build OK):** en el Logcat aparecen las peticiones (`--> GET https://api-colombia.com/api/v1/Region` y `<-- 200 OK`). En el emulador cargaron Explorar, el Detalle con la ubicación y el aeropuerto más cercano, y Buscar con *Cartagena*. Las coordenadas que la API manda como texto se convierten bien a número.
+
+---
+
+## 13. Estructura según la Referencia de Avance
+
+Comparamos el proyecto con las páginas *Referencia de Avance 1* y *Referencia de Avance 2* del Proyecto Integrador en la documentación del curso, y ajustamos la estructura de carpetas:
+
+| Lo que muestra la referencia | Cómo quedó en Rumbo Colombia |
+|---|---|
+| **`presentation/navigation/`** con `Destinations.kt` y `AppNavigation.kt` | Los dos archivos pasaron de `presentation/screens/` a `presentation/navigation/`. `MainActivity` importa `AppNavigation` desde ahí. |
+| **`presentation/components/`** con un archivo por componente | `Componentes.kt` se separó en `TarjetaAtraccion.kt`, `FilaResultado.kt`, `FotoAtraccion.kt`, `Cargando.kt` y `ErrorConReintentar.kt`. |
+| **`docs/tutorial_arquitectura.md`** (paquete de documentación) | Nuevo [`docs/tutorial_arquitectura.md`](app/src/main/java/com/rumbocolombia/android/docs/tutorial_arquitectura.md): estructura completa, diagrama de cómo se conectan los archivos y el flujo de ver el detalle de una atracción paso a paso. |
+| **Capas de datos** (`api`, `network`, `dto`, `repository`) | Ya quedaron así con las secciones [11](#11-capa-de-repositorio) y [12](#12-capa-de-red-network-layer). |
+
+**Verificación (build OK):** en el emulador se probaron Explorar, el Detalle y la vista Perfil; la navegación funciona igual que antes.
