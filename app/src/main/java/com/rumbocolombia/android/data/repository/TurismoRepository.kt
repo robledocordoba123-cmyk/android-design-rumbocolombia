@@ -1,5 +1,6 @@
 package com.rumbocolombia.android.data.repository
 
+import com.rumbocolombia.android.data.api.ApiClient
 import com.rumbocolombia.android.data.api.ApiColombiaService
 import com.rumbocolombia.android.data.dto.AeropuertoCercano
 import com.rumbocolombia.android.data.dto.Airport
@@ -10,7 +11,6 @@ import com.rumbocolombia.android.data.dto.DetalleAtraccion
 import com.rumbocolombia.android.data.dto.Region
 import com.rumbocolombia.android.data.dto.ResultadosBusqueda
 import com.rumbocolombia.android.data.dto.TouristicAttraction
-import com.rumbocolombia.android.data.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +47,7 @@ interface TurismoRepository {
  * sin que la app se cierre.
  */
 class TurismoRepositoryImpl(
-    private val api: ApiColombiaService = RetrofitClient.api
+    private val api: ApiColombiaService = ApiClient.apiColombiaService
 ) : TurismoRepository {
 
     // Cada pantalla crea su propio TurismoRepositoryImpl, así que lo que deben
