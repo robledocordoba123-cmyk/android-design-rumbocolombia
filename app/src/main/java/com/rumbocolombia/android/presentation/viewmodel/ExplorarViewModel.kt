@@ -5,15 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.rumbocolombia.android.data.dto.AtraccionConUbicacion
 import com.rumbocolombia.android.data.dto.Region
 import com.rumbocolombia.android.data.repository.TurismoRepository
+import com.rumbocolombia.android.data.repository.TurismoRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 // ViewModel de la pantalla Explorar: lista de atracciones y filtro por región.
-class ExplorarViewModel : ViewModel() {
-
-    private val repositorio = TurismoRepository
+class ExplorarViewModel(
+    private val repositorio: TurismoRepository = TurismoRepositoryImpl()
+) : ViewModel() {
 
     // Todas las atracciones que llegaron de la API (sin filtrar)
     private var todas: List<AtraccionConUbicacion> = emptyList()
@@ -38,13 +39,25 @@ class ExplorarViewModel : ViewModel() {
     fun cargar() {
         viewModelScope.launch {
             _estado.value = UiState.Cargando
-            try {
-                _regiones.value = repositorio.obtenerRegiones()
-                todas = repositorio.obtenerAtracciones()
-                aplicarFiltro()
-            } catch (e: Exception) {
-                _estado.value = UiState.Error(mensajeDeError(e))
-            }
+
+            // Llamada al repositorio que retorna Result<List<Region>>
+            repositorio.obtenerRegiones()
+                .onSuccess { listaObtenida ->
+                    _regiones.value = listaObtenida
+                }
+                .onFailure { error ->
+                    _estado.value = UiState.Error(mensajeDeError(error))
+                    return@launch
+                }
+
+            repositorio.obtenerAtracciones()
+                .onSuccess { listaObtenida ->
+                    todas = listaObtenida
+                    aplicarFiltro()
+                }
+                .onFailure { error ->
+                    _estado.value = UiState.Error(mensajeDeError(error))
+                }
         }
     }
 

@@ -8,5 +8,5 @@ sealed interface UiState<out T> {
 }
 
 // Mensaje claro para el usuario cuando falla la petición.
-fun mensajeDeError(e: Exception): String =
+fun mensajeDeError(e: Throwable): String =
     if (e is java.io.IOException) "Sin conexión a internet" else "No se pudieron cargar los datos"

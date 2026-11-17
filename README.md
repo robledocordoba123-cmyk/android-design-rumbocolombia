@@ -414,6 +414,8 @@ flowchart LR
 | [#13](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/13) | `feature/fase-4-navegacion-type-safe` | Fase 4: navegación type-safe con Navigation Compose | Aprobado por Davier |
 | [#14](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/14) | `docs/tabla-pr-13` | README: fila del PR #13 en este historial | Aprobado por Davier |
 | [#15](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/15) | `feature/fase-4-nueva-vista-perfil` | Fase 4: nueva vista Perfil siguiendo la guía de 4 pasos | Aprobado por Davier |
+| [#16](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/16) | `docs/tabla-pr-14-15` | README: filas de los PR #14 y #15 en este historial | Aprobado por Davier |
+| [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Pendiente de revisión |
 
 ### Lo que aprendimos
 
@@ -535,3 +537,30 @@ Seguimos la *Guía Paso a Paso: Cómo Agregar una Nueva Vista a la Navegación* 
 | Explorar con "Ver Perfil" | Perfil de Usuario |
 |---|---|
 | <img src="docs/app/navegacion/04-explorar-ver-perfil.png" width="200"> | <img src="docs/app/navegacion/05-perfil.png" width="200"> |
+
+---
+
+## 11. Capa de Repositorio
+
+Seguimos el *Tutorial Paso a Paso: La Capa de Repositorio en Android con Kotlin* de la documentación del curso. Antes el repositorio era un `object` que los ViewModels usaban directamente; ahora tiene una **interfaz** (el contrato) y una **implementación concreta**.
+
+| Lo que pide la guía | Cómo quedó en Rumbo Colombia |
+|---|---|
+| **Interfaz del repositorio** | `interface TurismoRepository` en `data/repository/`, con funciones `suspend` que devuelven `Result<T>`: `obtenerRegiones()`, `obtenerAtracciones()`, `obtenerDetalle(id)`, `buscar(texto)` y `departamentoDe(ciudad)`. |
+| **Implementación concreta** | `class TurismoRepositoryImpl(private val api: ApiColombiaService = RetrofitClient.api) : TurismoRepository`. La API entra por el constructor con un valor por defecto. |
+| **`runCatching`** | Cada función envuelve la petición en `runCatching { ... }`: si sale bien devuelve `Result.success`, y si falla (sin internet, error 404/500) devuelve `Result.failure` sin que la app se cierre. |
+| **Consumo desde el ViewModel** | `ExplorarViewModel`, `DetalleViewModel` y `BuscarViewModel` reciben el repositorio en el constructor (`repositorio: TurismoRepository = TurismoRepositoryImpl()`) y usan `viewModelScope.launch` con `.onSuccess { }` y `.onFailure { }`. |
+
+Como cada pantalla crea su propio `TurismoRepositoryImpl`, lo que deben compartir (las atracciones guardadas y los datos que no cambian) quedó en el `companion object` de la clase.
+
+```mermaid
+flowchart LR
+    UI[Pantalla] --> VM[ViewModel]
+    VM -- "repositorio.obtenerAtracciones()" --> R[TurismoRepository]
+    R -. implementa .-> RI[TurismoRepositoryImpl]
+    RI -- "runCatching { api... }" --> API[ApiColombiaService / Retrofit]
+    RI -- "Result.success / Result.failure" --> VM
+    VM -- "onSuccess → Exito · onFailure → Error" --> UI
+```
+
+**Verificación (build OK):** en el emulador cargaron Explorar, el Detalle, el botón **Guardar sin internet** (la marca aparece al volver a Explorar) y Buscar con *Medellín*. Sin internet, `onFailure` muestra *Sin conexión a internet* con **Reintentar**.
