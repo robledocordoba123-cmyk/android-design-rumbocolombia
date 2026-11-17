@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import coil.Coil
 import com.rumbocolombia.android.data.network.CargadorDeImagenes
-import com.rumbocolombia.android.presentation.screens.AppNavigation
+import com.rumbocolombia.android.presentation.navigation.AppNavigation
 import com.rumbocolombia.android.ui.theme.RumboColombiaTheme
 
 class MainActivity : ComponentActivity() {

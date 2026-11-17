@@ -1,4 +1,4 @@
-package com.rumbocolombia.android.presentation.screens
+package com.rumbocolombia.android.presentation.navigation
 
 import kotlinx.serialization.Serializable
 

@@ -1,10 +1,14 @@
-package com.rumbocolombia.android.presentation.screens
+package com.rumbocolombia.android.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.rumbocolombia.android.presentation.screens.BuscarScreen
+import com.rumbocolombia.android.presentation.screens.DetalleScreen
+import com.rumbocolombia.android.presentation.screens.ExplorarScreen
+import com.rumbocolombia.android.presentation.screens.ProfileScreen
 
 @Composable
 fun AppNavigation() {
