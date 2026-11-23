@@ -6,7 +6,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 
 > Proyecto Integrador · Aplicaciones Móviles Android · SENA, Tecnología en Análisis y Desarrollo de Software · Ficha 3229209 · Grupo 2
 >
-> Este repositorio contiene **solo el diseño** de la app y el **proyecto base** generado por Android Studio. Todavía no tiene código de la aplicación: todo lo que se planificó está documentado en este README.
+> Este repositorio empezó con **solo el diseño** de la app y el **proyecto base** generado por Android Studio (secciones 1 a 7). Después, siguiendo la documentación del curso, se construyó la app paso a paso (secciones 8 a 13): hoy consume datos reales de API Colombia con arquitectura MVVM.
 
 ## Integrantes
 
@@ -27,6 +27,9 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 8. [Fase 2: vistas y modelo en código](#8-fase-2-vistas-y-modelo-en-código)
 9. [Fase 3: datos reales de API Colombia](#9-fase-3-datos-reales-de-api-colombia)
 10. [Fase 4: navegación type-safe](#10-fase-4-navegación-type-safe)
+11. [Capa de Repositorio](#11-capa-de-repositorio)
+12. [Capa de Red (Network Layer)](#12-capa-de-red-network-layer)
+13. [Estructura según la Referencia de Avance](#13-estructura-según-la-referencia-de-avance)
 
 ---
 
@@ -334,7 +337,7 @@ com.rumbocolombia.android
 
 ## 5. Proyecto base en Android Studio
 
-El proyecto se creó en Android Studio con la plantilla **Empty Activity** y se subió **tal como lo generó el asistente**, sin agregar ni quitar nada. Todo el diseño de la app vive en este README; el código empezará en la siguiente etapa del proyecto.
+El proyecto se creó en Android Studio con la plantilla **Empty Activity** y se subió **tal como lo generó el asistente**, sin agregar ni quitar nada. En ese momento todo el diseño de la app vivía en este README; el código empezó después, en la sección 8.
 
 | Dato | Valor |
 |---|---|
@@ -354,12 +357,12 @@ El proyecto base compila y se ejecuta sin errores en el emulador de Android Stud
   <img src="docs/proyecto-base/hello-android.png" alt="Proyecto base corriendo en el emulador: Hello Android!" width="300">
 </p>
 
-### Qué trae el proyecto (y qué no)
+### Qué traía el proyecto base (commit inicial)
 
 - `MainActivity.kt` con el `Greeting("Android")` de la plantilla.
 - `ui/theme/` con `Color.kt`, `Theme.kt` y `Type.kt` generados por Android Studio.
 - Las pruebas de ejemplo (`ExampleUnitTest` y `ExampleInstrumentedTest`).
-- **No** hay data classes, ViewModels, llamadas a la API ni pantallas propias. Desde el commit inicial, los únicos archivos que cambiaron son este README y las imágenes de la carpeta `docs/`.
+- **No** tenía data classes, ViewModels, llamadas a la API ni pantallas propias. Hasta el Hito 7 los únicos archivos que cambiaron fueron este README y las imágenes de la carpeta `docs/`; el código de la app se agregó desde la sección 8.
 
 ---
 
@@ -391,7 +394,7 @@ flowchart LR
 ### Reglas que seguimos
 
 - **Nadie trabaja directo en `main`.** El único commit en `main` sin Pull Request es el del proyecto base generado por Android Studio.
-- **Una rama por hito**, con el nombre `docs/hito-N-tema` (por ejemplo `docs/hito-2-modelo-datos`).
+- **Una rama por hito o funcionalidad**: `docs/...` para documentación (por ejemplo `docs/hito-2-modelo-datos`) y `feature/...` para código (por ejemplo `feature/capa-repositorio`).
 - **Mensajes de commit en español** que empiezan por el hito y dicen qué se hizo: `Hito 4: arquitectura MVVM en Mermaid y tabla de endpoints`.
 - **Cada Pull Request lo revisa el otro integrante**, que lo aprueba antes de hacer el merge.
 
@@ -418,6 +421,8 @@ flowchart LR
 | [#17](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/17) | `feature/capa-repositorio` | Capa de Repositorio: interfaz + implementación con `Result` | Aprobado por Davier |
 | [#18](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/18) | `feature/capa-de-red` | Capa de Red: `ApiClient` con Kotlinx Serialization y OkHttp Logging | Aprobado por Davier |
 | [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Aprobado por Davier |
+| [#20](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/20) | `docs/tabla-pr-17-19` | README: PR #17, #18 y #19 aprobados en este historial | Aprobado por Davier |
+| [#21](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/21) | `docs/arquitectura-kotlinx` | README: arquitectura con Kotlinx Serialization en la sección 4 | Aprobado por Davier |
 
 ### Lo que aprendimos
 
@@ -489,7 +494,7 @@ Dependencias nuevas: `retrofit`, `converter-gson` y `coil-compose`.
 ### Lo que falta (siguiente fase)
 
 - **Room:** las atracciones guardadas hoy viven en memoria; con Room quedarán guardadas en el celular y se podrán ver sin internet (Sesión 5).
-- **Hilt:** inyectar el Repositorio en lugar de usar un `object` (Sesión 6).
+- **Hilt:** inyectar el Repositorio en los ViewModels (Sesión 6). Desde la [sección 11](#11-capa-de-repositorio) ya no es un `object`: es una interfaz con su implementación.
 - **Navegación:** pasar de la navegación con estado a Navigation Compose (Sesión 8). ✅ Hecho en la [sección 10](#10-fase-4-navegación-type-safe).
 
 ---
