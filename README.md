@@ -241,7 +241,7 @@ flowchart LR
     REPO["TurismoRepository<br/>(decide: API o datos guardados)"]
 
     subgraph REMOTA["Fuente remota"]
-        RET["Retrofit + Gson<br/>ApiColombiaService"]
+        RET["Retrofit + Kotlinx Serialization<br/>ApiClient · ApiColombiaService"]
     end
 
     subgraph LOCAL["Fuente local"]
@@ -274,7 +274,7 @@ flowchart LR
 | **UI** | Dibuja las 3 pantallas y le avisa al ViewModel lo que hace el usuario (tocar una tarjeta, escribir en el buscador). No sabe de dónde vienen los datos. | Jetpack Compose, Material 3, Navigation Compose |
 | **ViewModel** | Guarda el estado de cada pantalla y sobrevive cuando se gira el celular. Lanza las consultas en una corrutina. | ViewModel + `StateFlow` |
 | **Repositorio** | Es el único que habla con las fuentes de datos. Si hay internet consulta la API; si no, devuelve lo guardado en Room. | Kotlin Coroutines (`suspend`, `Dispatchers.IO`) |
-| **Fuente remota** | Hace las peticiones HTTP a API Colombia y convierte el JSON en objetos de Kotlin. | Retrofit + Gson |
+| **Fuente remota** | Hace las peticiones HTTP a API Colombia y convierte el JSON en objetos de Kotlin. | Retrofit + Kotlinx Serialization + OkHttp (cambiado de Gson en la [sección 12](#12-capa-de-red-network-layer)) |
 | **Fuente local** | Guarda las atracciones que el usuario marca para ver sin señal, y preferencias como la última región elegida. | Room y DataStore |
 | **Imágenes** | Descarga las fotos de las atracciones y las guarda en caché. | Coil |
 
@@ -313,7 +313,7 @@ URL base: `https://api-colombia.com/api/v1/`
 
 ### Estructura de carpetas planeada
 
-Esto fue el plan inicial. El 27 de octubre, al empezar el código (sección 8), se ajustó a la estructura de la guía de la Sesión 4 (`data/` y `presentation/`); los nombres de los ViewModels y del Repositorio se mantienen.
+Esto fue el plan inicial. El 27 de octubre, al empezar el código (sección 8), se ajustó a la estructura de la guía de la Sesión 4 (`data/` y `presentation/`); los nombres de los ViewModels y del Repositorio se mantienen. La estructura actual, igual a la Referencia de Avance del curso, está en la [sección 13](#13-estructura-según-la-referencia-de-avance) y en `docs/tutorial_arquitectura.md`.
 
 ```
 com.rumbocolombia.android
