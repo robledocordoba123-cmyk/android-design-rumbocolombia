@@ -6,14 +6,16 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 
 > Proyecto Integrador · Aplicaciones Móviles Android · SENA, Tecnología en Análisis y Desarrollo de Software · Ficha 3229209 · Grupo 2
 >
-> Este repositorio empezó con **solo el diseño** de la app y el **proyecto base** generado por Android Studio (secciones 1 a 7). Después, siguiendo la documentación del curso, se construyó la app paso a paso (secciones 8 a 13): hoy consume datos reales de API Colombia con arquitectura MVVM.
+> Este repositorio empezó con **solo el diseño** de la app y el **proyecto base** generado por Android Studio (secciones 1 a 7). Después, siguiendo la documentación del curso, se construyó la app paso a paso (secciones 8 a 14): hoy consume datos reales de API Colombia con arquitectura MVVM y guarda los datos en el celular con Room. Las secciones 15 y 16 explican la elección de tecnologías y las conclusiones.
 
 ## Integrantes
 
-| Integrante | Rol en el equipo |
-|---|---|
-| Manuela Córdoba Robledo | Líder del equipo |
-| Davier Andrés Quinto Bejarano | Integrante |
+| Integrante | Rol en el equipo | Funciones |
+|---|---|---|
+| Manuela Córdoba Robledo | Líder y desarrolladora | Crea el repositorio, programa la app, abre las ramas y los Pull Requests y mantiene este README. |
+| Davier Andrés Quinto Bejarano | Revisor de código | Revisa cada Pull Request, lo aprueba y lo une a `main`, y verifica que siga la documentación del curso. |
+
+**Objetivo central:** que cualquier persona encuentre los lugares turísticos de Colombia, sepa en qué ciudad, departamento y región quedan y cuál es el aeropuerto más cercano, incluso sin internet.
 
 ## Contenido
 
@@ -30,6 +32,9 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 11. [Capa de Repositorio](#11-capa-de-repositorio)
 12. [Capa de Red (Network Layer)](#12-capa-de-red-network-layer)
 13. [Estructura según la Referencia de Avance](#13-estructura-según-la-referencia-de-avance)
+14. [Capa de Datos local con Room](#14-capa-de-datos-local-con-room)
+15. [Justificación tecnológica](#15-justificación-tecnológica)
+16. [Conclusiones y aprendizajes](#16-conclusiones-y-aprendizajes)
 
 ---
 
@@ -368,7 +373,7 @@ El proyecto base compila y se ejecuta sin errores en el emulador de Android Stud
 
 ## 6. Video de presentación
 
-Video de máximo 5 minutos donde los dos integrantes explican la idea y la API, el modelo de datos, las pantallas de Stitch, la arquitectura MVVM y muestran el proyecto base corriendo.
+Video de máximo 5 minutos donde los dos integrantes explican la idea y la API, el modelo de datos, las pantallas de Stitch, la arquitectura MVVM y muestran la app corriendo, también sin internet.
 
 🎬 **Ver el video:** *pendiente: se agrega el enlace cuando esté grabado*
 
@@ -423,6 +428,7 @@ flowchart LR
 | [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Aprobado por Davier |
 | [#20](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/20) | `docs/tabla-pr-17-19` | README: PR #17, #18 y #19 aprobados en este historial | Aprobado por Davier |
 | [#21](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/21) | `docs/arquitectura-kotlinx` | README: arquitectura con Kotlinx Serialization en la sección 4 | Aprobado por Davier |
+| [#22](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/22) | `docs/readme-al-dia` | README al día: índice, secciones 11 a 13 y tabla de PR | Unido por Davier |
 
 ### Lo que aprendimos
 
@@ -611,3 +617,103 @@ Comparamos el proyecto con las páginas *Referencia de Avance 1* y *Referencia d
 | **Capas de datos** (`api`, `network`, `dto`, `repository`) | Ya quedaron así con las secciones [11](#11-capa-de-repositorio) y [12](#12-capa-de-red-network-layer). |
 
 **Verificación (build OK):** en el emulador se probaron Explorar, el Detalle y la vista Perfil; la navegación funciona igual que antes.
+
+---
+
+## 14. Capa de Datos local con Room
+
+En la sustentación del Avance 1 el criterio **Capa de Acceso a Datos** pedía que esa capa también guarde datos en el celular (persistencia local con SQLite o Room). La agregamos con **Room 2.8.4** (con KSP para generar el código).
+
+**Qué guarda:**
+
+| Tabla | Clase | Para qué sirve |
+|---|---|---|
+| `atracciones` | `AtraccionEntity` | Copia de cada atracción que llega de la API, con su ciudad, departamento y región. |
+| `guardadas` | `GuardadaEntity` | Ids de las atracciones que el usuario guarda con el botón **Guardar**. Antes estaban solo en memoria y se borraban al cerrar la app. |
+
+```mermaid
+erDiagram
+    ATRACCIONES ||--o| GUARDADAS : "se guarda como"
+    ATRACCIONES {
+        int id PK
+        string nombre
+        string descripcion
+        string imagen
+        double latitud
+        double longitud
+        int ciudadId
+        string ciudadNombre
+        int departamentoId
+        string departamentoNombre
+        int regionId
+        string regionNombre
+    }
+    GUARDADAS {
+        int atraccionId PK
+    }
+```
+
+**Archivos nuevos** (paquete `data/local/`):
+
+| Archivo | Qué hace |
+|---|---|
+| `AtraccionEntity.kt` y `GuardadaEntity.kt` | Las 2 tablas (`@Entity`). |
+| `AtraccionDao.kt` | Las consultas SQL (`@Dao`): guardar, listar, buscar por nombre o ciudad, y observar las guardadas con `Flow`. |
+| `BaseDeDatos.kt` | La base de datos `rumbo_colombia.db` (`@Database`), una sola para toda la app (Singleton). |
+| `Mapeo.kt` | Convierte el DTO de la API en fila de la tabla y al revés. |
+| `RumboColombiaApp.kt` | Clase `Application` que crea la base de datos al abrir la app (registrada en el `AndroidManifest`). |
+
+**Cómo funciona el repositorio ahora:** `TurismoRepositoryImpl` tiene 2 fuentes, la API (Retrofit) y Room (`AtraccionDao`). Primero pide a la API y guarda la respuesta en Room. Si no hay internet, responde con lo que quedó en el celular. Si tampoco hay nada guardado, devuelve el error y la pantalla muestra **Reintentar**. Los ViewModels y las pantallas no cambiaron: siguen pidiendo los datos al repositorio sin saber de dónde salen.
+
+```mermaid
+flowchart LR
+    VM[ViewModel] --> REPO[TurismoRepositoryImpl]
+    REPO -->|1. pide| API[Retrofit → API Colombia]
+    REPO -->|2. guarda la respuesta| ROOM[(Room: rumbo_colombia.db)]
+    REPO -.->|3. sin internet: lee| ROOM
+```
+
+**Verificación (build OK):** en el emulador se abrió la app con internet, se guardó Hacienda Nápoles y se reinició la app. Luego se apagaron el Wi‑Fi y los datos: Explorar mostró la lista y los filtros por región desde Room, y el Detalle abrió sin internet (sin el aeropuerto, que viene de la API).
+
+---
+
+## 15. Justificación tecnológica
+
+Por qué escogimos cada herramienta y qué papel cumple en la arquitectura:
+
+| Tecnología | Capa | Por qué la usamos |
+|---|---|---|
+| **Kotlin** | Todas | Es el lenguaje oficial de Android. Su manejo de nulos (`?`) evita cierres por datos vacíos de la API. |
+| **Jetpack Compose + Material 3** | Presentación | Las pantallas se escriben con menos código y se redibujan solas cuando cambia el estado. |
+| **MVVM** | Presentación y lógica | Separa la pantalla (solo muestra), el ViewModel (estado y lógica) y el repositorio (datos). Cada parte se puede cambiar sin tocar las otras. |
+| **ViewModel + StateFlow + `UiState`** | Lógica | El estado sobrevive a la rotación y cada pantalla tiene sus 3 estados: Cargando, Éxito y Error. |
+| **Corrutinas (`suspend`, `Dispatchers.IO`)** | Lógica y datos | Las peticiones y la base de datos corren en segundo plano, así la app no se congela. |
+| **Repositorio (interfaz + `Impl`) con `Result`** | Datos | Los ViewModels no saben si los datos vienen de la API o de Room. Un error se devuelve como `Result.failure` y la app no se cierra. |
+| **Retrofit 2.11.0 + Kotlinx Serialization** | Datos (red) | Retrofit declara los endpoints como funciones y Kotlinx convierte el JSON en clases de Kotlin, sin reflexión. |
+| **OkHttp Logging Interceptor** | Datos (red) | Muestra en el Logcat cada petición y respuesta, para depurar. |
+| **Room 2.8.4** | Datos (local) | Guarda las atracciones en el celular: la app funciona sin señal, que es la promesa de Rumbo Colombia. |
+| **Coil** | Presentación | Carga las fotos desde la URL y las guarda en caché. |
+| **Navigation Compose type-safe** | Presentación | Las rutas son clases `@Serializable`: si un dato entre pantallas está mal, falla al compilar y no con la app abierta. |
+| **API Colombia** | Fuente externa | Datos reales de Colombia, en español, gratis y sin API key. |
+| **GitHub Flow** | Equipo | Una rama y un Pull Request por cambio, revisado por el compañero antes de unir a `main`. |
+
+---
+
+## 16. Conclusiones y aprendizajes
+
+**Retos que resolvimos:**
+
+| Reto | Cómo lo resolvimos |
+|---|---|
+| En `/Airport` la API trae la latitud y la longitud al revés, y el aeropuerto más cercano salía mal. | Lo detectamos comparando con El Dorado y el repositorio las invierte antes de calcular la distancia (fórmula de Haversine). |
+| La búsqueda de la API no trae la ciudad de cada atracción. | El repositorio la toma de la lista completa de atracciones. |
+| El PR del Hito 2 se abrió sobre la rama del Hito 1 y no llegó a `main`. | Lo corregimos con el PR #3 y desde entonces cada rama sale de `main` actualizado. |
+| Sin internet la app solo mostraba un error. | Agregamos Room (sección 14): ahora muestra lo que ya se había cargado. |
+
+**Aprendizajes:**
+
+- Organizar una app por capas (presentación, lógica y datos) hace que cada archivo tenga una sola responsabilidad.
+- Consumir una API real enseña a desconfiar de los datos: campos vacíos, tipos distintos y coordenadas al revés.
+- Trabajar con ramas y Pull Requests deja un historial claro de quién hizo qué y cuándo.
+
+**Conclusión:** gracias a la arquitectura por capas pudimos agregar Room sin cambiar ninguna pantalla: solo cambió el repositorio. Rumbo Colombia cumple su idea principal, ser una guía turística que funciona incluso sin señal.

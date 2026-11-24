@@ -11,10 +11,15 @@ import com.rumbocolombia.android.data.dto.DetalleAtraccion
 import com.rumbocolombia.android.data.dto.Region
 import com.rumbocolombia.android.data.dto.ResultadosBusqueda
 import com.rumbocolombia.android.data.dto.TouristicAttraction
+import com.rumbocolombia.android.data.local.AtraccionDao
+import com.rumbocolombia.android.data.local.BaseDeDatos
+import com.rumbocolombia.android.data.local.GuardadaEntity
+import com.rumbocolombia.android.data.local.aEntity
+import com.rumbocolombia.android.data.local.aModelo
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -33,26 +38,32 @@ interface TurismoRepository {
     suspend fun buscar(texto: String): Result<ResultadosBusqueda>
     suspend fun departamentoDe(ciudad: City): Result<Department?>
 
-    // Atracciones guardadas para ver sin internet (por ahora en memoria;
-    // en la sesión de Room se guardarán en el celular).
-    val guardadas: StateFlow<Set<Int>>
-    fun guardarAtraccion(id: Int)
-    fun eliminarGuardada(id: Int)
+    // Atracciones guardadas por el usuario (tabla guardadas de Room)
+    val guardadas: Flow<Set<Int>>
+    suspend fun guardarAtraccion(id: Int)
+    suspend fun eliminarGuardada(id: Int)
 }
 
 /**
- * Implementación concreta del Repositorio que utiliza la API de red (ApiColombiaService).
- * Cada función usa runCatching: si la petición sale bien devuelve Result.success,
- * y si falla (sin internet, error 404/500, JSON inválido) devuelve Result.failure
- * sin que la app se cierre.
+ * Implementación concreta del Repositorio. Usa 2 fuentes de datos:
+ * - Remota: la API de red (ApiColombiaService con Retrofit).
+ * - Local: la base de datos Room del celular (AtraccionDao).
+ *
+ * Primero pide a la API y guarda la respuesta en Room. Si no hay internet,
+ * responde con lo que quedó guardado en el celular. Los ViewModels no saben
+ * de cuál de las dos fuentes salieron los datos.
+ *
+ * Cada función usa runCatching: si sale bien devuelve Result.success, y si
+ * falla (sin internet y sin datos guardados, error 404/500, JSON inválido)
+ * devuelve Result.failure sin que la app se cierre.
  */
 class TurismoRepositoryImpl(
-    private val api: ApiColombiaService = ApiClient.apiColombiaService
+    private val api: ApiColombiaService = ApiClient.apiColombiaService,
+    private val dao: AtraccionDao = BaseDeDatos.obtener().atraccionDao()
 ) : TurismoRepository {
 
-    // Cada pantalla crea su propio TurismoRepositoryImpl, así que lo que deben
-    // compartir las 3 pantallas (memoria de datos y guardadas) va en el
-    // companion object.
+    // Cada pantalla crea su propio TurismoRepositoryImpl, así que la memoria
+    // de datos que deben compartir las 3 pantallas va en el companion object.
     private companion object {
         // Regiones, departamentos y aeropuertos casi no cambian: se piden una
         // vez y se guardan en memoria para no repetir la petición.
@@ -63,17 +74,22 @@ class TurismoRepositoryImpl(
         // Última lista de atracciones recibida. La búsqueda de la API no trae la
         // ciudad de cada atracción, así que se toma de aquí.
         var atracciones: List<TouristicAttraction> = emptyList()
-
-        val _guardadas = MutableStateFlow<Set<Int>>(emptySet())
     }
 
-    override val guardadas: StateFlow<Set<Int>> = _guardadas.asStateFlow()
+    // Room avisa con un Flow cada vez que cambia la tabla guardadas
+    override val guardadas: Flow<Set<Int>> = dao.observarGuardadas().map { it.toSet() }
 
-    // Todas las peticiones van en Dispatchers.IO, el hilo para red.
+    // Todas las peticiones van en Dispatchers.IO, el hilo para red y base de datos.
     override suspend fun obtenerRegiones(): Result<List<Region>> {
         return runCatching {
             withContext(Dispatchers.IO) {
-                regiones ?: api.obtenerRegiones().also { regiones = it }
+                regiones ?: desdeApiOLocal(
+                    api = { api.obtenerRegiones().also { regiones = it } },
+                    // Sin internet: las regiones de las atracciones guardadas en el celular
+                    local = {
+                        dao.obtenerAtracciones().mapNotNull { it.aModelo().region }.distinctBy { it.id }
+                    }
+                )
             }
         }
     }
@@ -81,8 +97,14 @@ class TurismoRepositoryImpl(
     override suspend fun obtenerAtracciones(): Result<List<AtraccionConUbicacion>> {
         return runCatching {
             withContext(Dispatchers.IO) {
-                val lista = api.obtenerAtracciones().also { atracciones = it }
-                lista.map { conUbicacion(it) }
+                desdeApiOLocal(
+                    api = {
+                        val lista = api.obtenerAtracciones().also { atracciones = it }
+                        lista.map { conUbicacion(it) }
+                            .also { dao.guardarAtracciones(it.map { item -> item.aEntity() }) }
+                    },
+                    local = { dao.obtenerAtracciones().map { it.aModelo() } }
+                )
             }
         }
     }
@@ -90,10 +112,17 @@ class TurismoRepositoryImpl(
     override suspend fun obtenerDetalle(id: Int): Result<DetalleAtraccion> {
         return runCatching {
             withContext(Dispatchers.IO) {
-                val atraccion = api.obtenerAtraccion(id)
-                DetalleAtraccion(
-                    item = conUbicacion(atraccion),
-                    aeropuertoCercano = aeropuertoMasCercano(atraccion)
+                desdeApiOLocal(
+                    api = {
+                        val atraccion = api.obtenerAtraccion(id)
+                        val item = conUbicacion(atraccion)
+                        dao.guardarAtracciones(listOf(item.aEntity()))
+                        DetalleAtraccion(item = item, aeropuertoCercano = aeropuertoMasCercano(atraccion))
+                    },
+                    // Sin internet: la atracción guardada, sin aeropuerto (ese dato viene de la API)
+                    local = {
+                        dao.obtenerAtraccion(id)?.let { DetalleAtraccion(item = it.aModelo(), aeropuertoCercano = null) }
+                    }
                 )
             }
         }
@@ -102,9 +131,18 @@ class TurismoRepositoryImpl(
     override suspend fun buscar(texto: String): Result<ResultadosBusqueda> {
         return runCatching {
             withContext(Dispatchers.IO) {
-                ResultadosBusqueda(
-                    ciudades = api.buscarCiudades(texto),
-                    atracciones = api.buscarAtracciones(texto).map { conUbicacion(it) }
+                desdeApiOLocal(
+                    api = {
+                        ResultadosBusqueda(
+                            ciudades = api.buscarCiudades(texto),
+                            atracciones = api.buscarAtracciones(texto).map { conUbicacion(it) }
+                        )
+                    },
+                    // Sin internet: busca por nombre o ciudad en las atracciones guardadas
+                    local = {
+                        val encontradas = dao.buscar(texto).map { it.aModelo() }
+                        if (encontradas.isEmpty()) null else ResultadosBusqueda(emptyList(), encontradas)
+                    }
                 )
             }
         }
@@ -118,12 +156,27 @@ class TurismoRepositoryImpl(
         }
     }
 
-    override fun guardarAtraccion(id: Int) {
-        _guardadas.value = _guardadas.value + id
+    override suspend fun guardarAtraccion(id: Int) {
+        withContext(Dispatchers.IO) { dao.guardar(GuardadaEntity(id)) }
     }
 
-    override fun eliminarGuardada(id: Int) {
-        _guardadas.value = _guardadas.value - id
+    override suspend fun eliminarGuardada(id: Int) {
+        withContext(Dispatchers.IO) { dao.eliminarGuardada(id) }
+    }
+
+    // Intenta primero con la API. Si falla (por ejemplo, sin internet), usa los datos
+    // guardados en Room. Si tampoco hay nada guardado, lanza el error original para
+    // que la pantalla muestre "Sin conexión" y el botón Reintentar.
+    private suspend fun <T> desdeApiOLocal(api: suspend () -> T, local: suspend () -> T?): T {
+        return try {
+            api()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val guardado = local()
+            if (guardado == null || (guardado is List<*> && guardado.isEmpty())) throw e
+            guardado
+        }
     }
 
     private suspend fun obtenerDepartamentos(): List<Department> =
