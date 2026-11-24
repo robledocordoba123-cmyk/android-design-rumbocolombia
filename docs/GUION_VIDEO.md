@@ -4,13 +4,13 @@ Duración máxima: **5 minutos**. Hablan los dos integrantes. Se graba la pantal
 
 | Tiempo | Quién habla | Qué se muestra | Qué se dice (idea principal) |
 |---|---|---|---|
-| 0:00 – 0:30 | **Manuela** | README, arriba (título y tabla de integrantes) | Saludo, nombres, ficha 3229209, grupo 2. "Rumbo Colombia es una guía turística para el celular que funciona incluso sin señal." |
+| 0:00 – 0:30 | **Manuela** | README, arriba (título y tabla de integrantes) | Saludo, nombres, ficha 3229209, grupo 2 y roles: Manuela líder y desarrolladora, Davier revisor de código. "Rumbo Colombia es una guía turística para el celular que funciona incluso sin señal." |
 | 0:30 – 1:15 | **Manuela** | Sección 1 (pitch y API) | El problema (información repartida y sin señal en carretera) y la solución. Por qué es app móvil: GPS, mapas, modo sin internet. Por qué API Colombia: datos reales, en español, gratis y sin API key. |
 | 1:15 – 2:00 | **Davier** | Sección 2 (diagrama ER) | Las 5 entidades: Región, Departamento, Ciudad, Atracción y Aeropuerto. Explicar las relaciones 1:N y la 1:1 de la capital. Mencionar los campos que pueden venir vacíos (`Int?`). |
 | 2:00 – 3:00 | **Manuela** | Prototipo en Google Stitch (link de la sección 3) | Recorrer las 3 pantallas: Explorar → tocar una tarjeta → Detalle con "Cómo llegar" (aeropuerto más cercano) → Buscar. Decir que solo viaja el `attractionId` entre pantallas. |
-| 3:00 – 4:00 | **Davier** | Sección 4 (diagrama de arquitectura y tabla de endpoints) | MVVM: UI → ViewModel → Repositorio → Retrofit → API. Corrutinas, estados Loading / Success / Error, Room para ver sin señal, Coil para las fotos. La API no usa clave; si un día se usa una, va en `local.properties`. |
-| 4:00 – 4:40 | **Davier** | Android Studio con el emulador abierto | Ejecutar el proyecto base: aparece "Hello Android!". Aclarar que el proyecto se dejó sin código propio, como pide la actividad. |
-| 4:40 – 5:00 | **Manuela** | Pestaña *Pull requests* (cerrados) de GitHub | Cómo trabajamos: una rama y un Pull Request por hito, Davier revisa y aprueba antes de unir a `main`. Despedida. |
+| 3:00 – 3:45 | **Davier** | Sección 4 y sección 15 (arquitectura y tecnologías) | MVVM: UI → ViewModel → Repositorio → Retrofit → API, y Room como fuente local. Por qué cada tecnología (Compose, Retrofit, Room, Coil, navegación type-safe). La API no usa clave. |
+| 3:45 – 4:30 | **Davier** | Android Studio con el emulador abierto | Mostrar las carpetas `data` y `presentation`. Correr la app: Explorar, Detalle y Buscar. Apagar el Wi‑Fi, reabrir la app y mostrar que los lugares salen desde Room. |
+| 4:30 – 5:00 | **Manuela** | Pestaña *Pull requests* (cerrados) y sección 16 | Cómo trabajamos: una rama y un Pull Request por cambio, Davier revisa y aprueba antes de unir a `main`. Un reto y un aprendizaje (coordenadas al revés de la API, Room). Despedida. |
 
 ## Antes de grabar
 
