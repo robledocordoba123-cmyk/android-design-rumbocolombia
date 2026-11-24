@@ -24,7 +24,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 3. [Pantallas y flujo de navegación](#3-pantallas-y-flujo-de-navegación) (Hito 3)
 4. [Arquitectura y endpoints](#4-arquitectura-y-endpoints) (Hito 4)
 5. [Proyecto base en Android Studio](#5-proyecto-base-en-android-studio) (Hito 5)
-6. [Video de presentación](#6-video-de-presentación) (Hito 6)
+6. [Presentación (exposición en vivo)](#6-presentación-exposición-en-vivo) (Hito 6)
 7. [Cómo trabajamos (GitHub Flow)](#7-cómo-trabajamos-github-flow) (Hito 7)
 8. [Fase 2: vistas y modelo en código](#8-fase-2-vistas-y-modelo-en-código)
 9. [Fase 3: datos reales de API Colombia](#9-fase-3-datos-reales-de-api-colombia)
@@ -371,13 +371,18 @@ El proyecto base compila y se ejecuta sin errores en el emulador de Android Stud
 
 ---
 
-## 6. Video de presentación
+## 6. Presentación (exposición en vivo)
 
-Video de máximo 5 minutos donde los dos integrantes explican la idea y la API, el modelo de datos, las pantallas de Stitch, la arquitectura MVVM y muestran la app corriendo, también sin internet.
+El docente indicó que la presentación se hace como **exposición en vivo de 10 minutos** en clase, en lugar del video. Hablan los dos integrantes por igual:
 
-🎬 **Ver el video:** *pendiente: se agrega el enlace cuando esté grabado*
+| Minuto | Quién | Qué se muestra |
+|---|---|---|
+| 0 – 3 | Manuela | Idea, roles y la app corriendo en el emulador (también sin internet) |
+| 3 – 7:30 | Davier | Las capas en Android Studio, la justificación tecnológica (sección 15) y los Pull Requests que revisó |
+| 7:30 – 9 | Manuela | README, retos, aprendizajes y conclusiones (sección 16) |
+| 9 – 10 | Los dos | Preguntas del docente |
 
-El guion, con lo que dice cada integrante y el tiempo de cada parte, está en [docs/GUION_VIDEO.md](docs/GUION_VIDEO.md).
+El guion que se preparó para el video está en [docs/GUION_VIDEO.md](docs/GUION_VIDEO.md).
 
 ---
 
@@ -429,6 +434,7 @@ flowchart LR
 | [#20](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/20) | `docs/tabla-pr-17-19` | README: PR #17, #18 y #19 aprobados en este historial | Aprobado por Davier |
 | [#21](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/21) | `docs/arquitectura-kotlinx` | README: arquitectura con Kotlinx Serialization en la sección 4 | Aprobado por Davier |
 | [#22](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/22) | `docs/readme-al-dia` | README al día: índice, secciones 11 a 13 y tabla de PR | Unido por Davier |
+| [#23](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/23) | `feature/persistencia-room` | Capa de Datos local con Room y secciones 14 a 16 | Unido por Davier |
 
 ### Lo que aprendimos
 
