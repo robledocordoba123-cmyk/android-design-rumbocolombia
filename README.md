@@ -30,6 +30,7 @@ Diseño y arquitectura de una aplicación móvil Android que muestra los atracti
 11. [Capa de Repositorio](#11-capa-de-repositorio)
 12. [Capa de Red (Network Layer)](#12-capa-de-red-network-layer)
 13. [Estructura según la Referencia de Avance](#13-estructura-según-la-referencia-de-avance)
+14. [Capa de Datos local con Room](#14-capa-de-datos-local-con-room)
 
 ---
 
@@ -423,6 +424,7 @@ flowchart LR
 | [#19](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/19) | `feature/referencia-avance` | Estructura igual a la Referencia de Avance 1 y 2: carpeta `navigation/`, un archivo por componente y `docs/` | Aprobado por Davier |
 | [#20](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/20) | `docs/tabla-pr-17-19` | README: PR #17, #18 y #19 aprobados en este historial | Aprobado por Davier |
 | [#21](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/21) | `docs/arquitectura-kotlinx` | README: arquitectura con Kotlinx Serialization en la sección 4 | Aprobado por Davier |
+| [#22](https://github.com/robledocordoba123-cmyk/android-design-rumbocolombia/pull/22) | `docs/readme-al-dia` | README al día: índice, secciones 11 a 13 y tabla de PR | Unido por Davier |
 
 ### Lo que aprendimos
 
@@ -611,3 +613,60 @@ Comparamos el proyecto con las páginas *Referencia de Avance 1* y *Referencia d
 | **Capas de datos** (`api`, `network`, `dto`, `repository`) | Ya quedaron así con las secciones [11](#11-capa-de-repositorio) y [12](#12-capa-de-red-network-layer). |
 
 **Verificación (build OK):** en el emulador se probaron Explorar, el Detalle y la vista Perfil; la navegación funciona igual que antes.
+
+---
+
+## 14. Capa de Datos local con Room
+
+En la sustentación del Avance 1 el criterio **Capa de Acceso a Datos** pedía que esa capa también guarde datos en el celular (persistencia local con SQLite o Room). La agregamos con **Room 2.8.4** (con KSP para generar el código).
+
+**Qué guarda:**
+
+| Tabla | Clase | Para qué sirve |
+|---|---|---|
+| `atracciones` | `AtraccionEntity` | Copia de cada atracción que llega de la API, con su ciudad, departamento y región. |
+| `guardadas` | `GuardadaEntity` | Ids de las atracciones que el usuario guarda con el botón **Guardar**. Antes estaban solo en memoria y se borraban al cerrar la app. |
+
+```mermaid
+erDiagram
+    ATRACCIONES ||--o| GUARDADAS : "se guarda como"
+    ATRACCIONES {
+        int id PK
+        string nombre
+        string descripcion
+        string imagen
+        double latitud
+        double longitud
+        int ciudadId
+        string ciudadNombre
+        int departamentoId
+        string departamentoNombre
+        int regionId
+        string regionNombre
+    }
+    GUARDADAS {
+        int atraccionId PK
+    }
+```
+
+**Archivos nuevos** (paquete `data/local/`):
+
+| Archivo | Qué hace |
+|---|---|
+| `AtraccionEntity.kt` y `GuardadaEntity.kt` | Las 2 tablas (`@Entity`). |
+| `AtraccionDao.kt` | Las consultas SQL (`@Dao`): guardar, listar, buscar por nombre o ciudad, y observar las guardadas con `Flow`. |
+| `BaseDeDatos.kt` | La base de datos `rumbo_colombia.db` (`@Database`), una sola para toda la app (Singleton). |
+| `Mapeo.kt` | Convierte el DTO de la API en fila de la tabla y al revés. |
+| `RumboColombiaApp.kt` | Clase `Application` que crea la base de datos al abrir la app (registrada en el `AndroidManifest`). |
+
+**Cómo funciona el repositorio ahora:** `TurismoRepositoryImpl` tiene 2 fuentes, la API (Retrofit) y Room (`AtraccionDao`). Primero pide a la API y guarda la respuesta en Room. Si no hay internet, responde con lo que quedó en el celular. Si tampoco hay nada guardado, devuelve el error y la pantalla muestra **Reintentar**. Los ViewModels y las pantallas no cambiaron: siguen pidiendo los datos al repositorio sin saber de dónde salen.
+
+```mermaid
+flowchart LR
+    VM[ViewModel] --> REPO[TurismoRepositoryImpl]
+    REPO -->|1. pide| API[Retrofit → API Colombia]
+    REPO -->|2. guarda la respuesta| ROOM[(Room: rumbo_colombia.db)]
+    REPO -.->|3. sin internet: lee| ROOM
+```
+
+**Verificación (build OK):** en el emulador se abrió la app con internet, se guardó Hacienda Nápoles y se reinició la app. Luego se apagaron el Wi‑Fi y los datos: Explorar mostró la lista y los filtros por región desde Room, y el Detalle abrió sin internet (sin el aeropuerto, que viene de la API).

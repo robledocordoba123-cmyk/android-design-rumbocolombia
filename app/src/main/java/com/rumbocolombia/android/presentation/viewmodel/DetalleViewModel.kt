@@ -6,8 +6,10 @@ import com.rumbocolombia.android.data.dto.DetalleAtraccion
 import com.rumbocolombia.android.data.repository.TurismoRepository
 import com.rumbocolombia.android.data.repository.TurismoRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // ViewModel de la pantalla Detalle: recibe el attractionId y pide a la API
@@ -19,7 +21,9 @@ class DetalleViewModel(
     private val _estado = MutableStateFlow<UiState<DetalleAtraccion>>(UiState.Cargando)
     val estado: StateFlow<UiState<DetalleAtraccion>> = _estado.asStateFlow()
 
+    // Ids guardados en Room: el botón Guardar cambia apenas cambia la tabla
     val guardadas: StateFlow<Set<Int>> = repositorio.guardadas
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     fun cargar(attractionId: Int) {
         viewModelScope.launch {
@@ -35,12 +39,14 @@ class DetalleViewModel(
         }
     }
 
-    // Agrega o quita la atracción de las guardadas para ver sin internet
+    // Agrega o quita la atracción de las guardadas (se guarda en Room)
     fun cambiarGuardada(attractionId: Int) {
-        if (attractionId in repositorio.guardadas.value) {
-            repositorio.eliminarGuardada(attractionId)
-        } else {
-            repositorio.guardarAtraccion(attractionId)
+        viewModelScope.launch {
+            if (attractionId in guardadas.value) {
+                repositorio.eliminarGuardada(attractionId)
+            } else {
+                repositorio.guardarAtraccion(attractionId)
+            }
         }
     }
 }

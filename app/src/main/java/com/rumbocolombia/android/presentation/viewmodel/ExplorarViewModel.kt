@@ -7,8 +7,10 @@ import com.rumbocolombia.android.data.dto.Region
 import com.rumbocolombia.android.data.repository.TurismoRepository
 import com.rumbocolombia.android.data.repository.TurismoRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // ViewModel de la pantalla Explorar: lista de atracciones y filtro por región.
@@ -28,8 +30,9 @@ class ExplorarViewModel(
     private val _regionSeleccionada = MutableStateFlow<Int?>(null) // null = todas
     val regionSeleccionada: StateFlow<Int?> = _regionSeleccionada.asStateFlow()
 
-    // Ids de las atracciones guardadas, para marcar las tarjetas
+    // Ids de las atracciones guardadas (tabla de Room), para marcar las tarjetas
     val guardadas: StateFlow<Set<Int>> = repositorio.guardadas
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     init {
         cargar()

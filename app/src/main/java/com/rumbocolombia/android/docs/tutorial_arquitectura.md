@@ -16,8 +16,14 @@ app/src/main/java/com/rumbocolombia/android/
 │    │    └── CargadorDeImagenes.kt      (Coil para las fotos)
 │    ├── dto/
 │    │    └── Modelos.kt                 (Region, Department, City, TouristicAttraction, Airport)
+│    ├── local/                          (Room: base de datos del celular)
+│    │    ├── AtraccionEntity.kt         (tabla atracciones)
+│    │    ├── GuardadaEntity.kt          (tabla guardadas)
+│    │    ├── AtraccionDao.kt            (consultas SQL)
+│    │    ├── BaseDeDatos.kt             (rumbo_colombia.db)
+│    │    └── Mapeo.kt                   (DTO <-> Entity)
 │    └── repository/
-│         └── TurismoRepository.kt       (interfaz + TurismoRepositoryImpl)
+│         └── TurismoRepository.kt       (interfaz + TurismoRepositoryImpl: API + Room)
 │
 ├── presentation/                        <-- CAPA DE PRESENTACIÓN
 │    ├── viewmodel/                      (estado de cada pantalla con StateFlow)
@@ -49,6 +55,7 @@ app/src/main/java/com/rumbocolombia/android/
 │    ├── Theme.kt
 │    └── Type.kt
 │
+├── RumboColombiaApp.kt                  <-- CREA LA BASE DE DATOS AL ABRIR LA APP
 └── MainActivity.kt                      <-- PUNTO DE ENTRADA
 ```
 
@@ -71,14 +78,17 @@ flowchart TB
     DVM --> REPO
     BVM --> REPO
     REPO --> API[ApiClient / ApiColombiaService]
+    REPO --> DAO[AtraccionDao / BaseDeDatos Room]
     API --> DTO[data/dto/Modelos.kt]
+    DAO --> ENT[AtraccionEntity / GuardadaEntity]
 ```
 
 ## 3. Qué hace cada capa
 
 - **data/dto:** las data class con `@Serializable`. Los campos se llaman igual que en el JSON de API Colombia.
 - **data/api:** `ApiColombiaService` declara los endpoints con funciones `suspend`. `ApiClient` crea Retrofit con OkHttp (con logs en el Logcat) y Kotlinx Serialization.
-- **data/repository:** la interfaz `TurismoRepository` dice qué datos se pueden pedir. `TurismoRepositoryImpl` hace las peticiones con `runCatching` y devuelve `Result`, así un error de red no cierra la app.
+- **data/local:** la base de datos Room `rumbo_colombia.db` con 2 tablas (`atracciones` y `guardadas`) y el `AtraccionDao` con las consultas SQL.
+- **data/repository:** la interfaz `TurismoRepository` dice qué datos se pueden pedir. `TurismoRepositoryImpl` pide primero a la API y guarda la respuesta en Room; si no hay internet, responde con lo guardado. Usa `runCatching` y devuelve `Result`, así un error no cierra la app.
 - **presentation/viewmodel:** cada pantalla tiene su ViewModel. Pide los datos al repositorio con `viewModelScope.launch` y guarda el estado en un `StateFlow` (`Cargando`, `Exito` o `Error`).
 - **presentation/navigation:** las rutas son clases con `@Serializable` (`ExplorarScreen`, `DetalleScreen(attractionId)`, `BuscarScreen`, `ProfileScreen(username)`) y el `NavHost` las conecta con las pantallas.
 - **presentation/screens y components:** las pantallas leen el estado con `collectAsState()` y lo dibujan usando los componentes.
@@ -92,4 +102,5 @@ flowchart TB
 5. El usuario toca una tarjeta y se ejecuta `navController.navigate(DetalleScreen(attractionId = id))`.
 6. `AppNavigation` recupera el id con `backStackEntry.toRoute()` y abre `DetalleScreen`.
 7. `DetalleViewModel` pide `repositorio.obtenerDetalle(id)`: la atracción, su ubicación y el aeropuerto más cercano.
-8. Si no hay internet, `onFailure` cambia el estado a `Error("Sin conexión a internet")` y se ve el botón **Reintentar**.
+8. Si no hay internet, el repositorio busca la atracción en Room y la pantalla la muestra igual (sin el aeropuerto, que viene de la API).
+9. Si tampoco está guardada en el celular, `onFailure` cambia el estado a `Error("Sin conexión a internet")` y se ve el botón **Reintentar**.
